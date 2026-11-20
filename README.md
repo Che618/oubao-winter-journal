@@ -1,6 +1,6 @@
 # 鸥宝越冬志
 
-手机端单页翻书 H5。第一章接入真实日记、报道与现有图片；八章共用书本、导航、分页和回信组件。设计依据见 [SKILL.md](./SKILL.md)。本项目尚未部署。
+手机端单页翻书 H5。第一章接入真实日记、报道与现有图片；八章共用书本、导航、分页和回信组件。设计依据见 [SKILL.md](./SKILL.md)。项目已配置 GitHub Pages 自动发布流程，首次使用需启用仓库的 Pages 设置。
 
 ## 本地运行
 
@@ -27,9 +27,17 @@ $env:PLAYWRIGHT_CHANNEL = 'chromium'
 npm test
 ```
 
-## GitHub Actions 自动构建
+## GitHub Actions 构建与 Pages 发布
 
-仓库内的 `.github/workflows/build.yml` 会在推送到 `main`、向 `main` 发起 PR 时构建，也支持手动运行。流程使用 Node.js 24，执行 `npm ci` 与 `npm run build`，将 `dist/` 保存为可下载产物。此流程只构建，不发布网站。
+仓库内的 `.github/workflows/build.yml` 会在推送到 `main`、向 `main` 发起 PR 时构建，也支持手动运行。流程使用 Node.js 24，执行 `npm ci` 与 `npm run build`，将 `dist/` 保存为可下载产物。`main` 的推送或手动运行会在构建成功后发布到 GitHub Pages；PR 仅构建，不发布。
+
+首次启用：打开仓库 **Settings → Pages → Build and deployment → Source**，选择 **GitHub Actions**。不需要再选择或生成其他模板工作流，本仓库已有完整配置。
+
+然后打开 **Actions → Build website → Run workflow**，选择 `main` 并运行。等待 **Build and save dist**、**Publish to GitHub Pages** 两项均显示绿色勾。发布任务会输出访问网址，当前仓库默认地址为：
+
+https://che618.github.io/oubao-winter-journal/
+
+如果发布任务的 **Check Pages configuration** 提示 Pages 尚未启用，完成上面的 Source 设置，再手动运行一次。若 **github-pages** 环境要求审核，仓库管理员需要在运行页面点击 **Review deployments** 并批准。
 
 在 GitHub 仓库中打开 **Actions → Build website**，点击最近一次运行查看状态。绿色勾表示构建成功；若失败，展开红色步骤查看日志。构建成功后，在该次运行底部的 **Artifacts** 中下载 `oubao-website-dist`，其中包含可放到静态服务器的网站文件，保留14天。
 
@@ -37,7 +45,7 @@ npm test
 
 构建直接使用仓库中的 `public/assets` 和已生成的翻页模块，不运行依赖本机原始素材的 `npm run assets`。下载的 `dist` 需要通过 HTTP 静态服务预览，不能依赖双击 HTML 文件打开。
 
-若要通过 GitHub Pages 获得可公开访问的网址，还需另外配置 Pages 发布步骤；仅运行本构建流程不会生成网站访问地址。
+网页使用相对资源路径，可在仓库子路径下访问。构建任务只需读取仓库；发布任务单独获得 Pages 写入和部署身份令牌权限，不需要添加个人访问令牌。后续推送到 `main` 即自动更新网站，无须上传 `dist` 到代码分支。
 
 ## 页面与内容分离
 
