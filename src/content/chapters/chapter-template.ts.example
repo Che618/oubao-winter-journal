@@ -1,0 +1,47 @@
+import { asset, type ChapterContent } from '../types';
+
+// 复制为 chapter-02.ts，再填写实际文稿；本模板不会进入正式阅读目录。
+const chapter: ChapterContent = {
+  id: 'chapter-02',
+  opening: {
+    greeting: '第二章 · 汇群',
+    title: '填写本章开篇标题',
+    paragraphs: ['填写本章开篇内容，不必重复第一章的自我介绍。'],
+    illustration: asset('oubao.webp'),
+    illustrationAlt: '鸥宝',
+    annotation: '填写可选的插画旁注',
+  },
+  diary: {
+    title: '填写日记标题',
+    date: '填写日期', weekday: '填写星期', weather: '填写天气',
+    paragraphs: ['每个数组项是一段日记。', '页面会依据屏幕尺寸自动分页。'],
+    signature: '——鸥宝在汉中的越冬日记',
+  },
+  video: {
+    title: '鸥宝的 Vlog',
+    poster: asset('chapter-02/photo-01.webp'),
+    // 收到视频后取消注释；未填写 src 时展示待更新状态。
+    // src: asset('chapter-02/vlog.mp4'),
+    // aiGenerated: true,
+    caption: '填写视频简介',
+  },
+  article: {
+    title: '填写原稿标题', subtitle: '填写可选副标题', author: '填写原稿署名',
+    blocks: [
+      { type: 'paragraph', text: '填写完整原稿，按自然段分开。' },
+      { type: 'photo', src: asset('chapter-02/photo-01.webp'), alt: '填写图片内容描述', caption: '填写图片说明' },
+      { type: 'paragraph', text: '继续填写下一段原稿。' },
+    ],
+  },
+  // 第二章按总策划接小课堂；其他章节可选择不同活动。
+  activities: [{
+    type: 'quiz', id: 'food-classroom', title: '鸥宝能吃什么？',
+    question: '请选择适合鸥宝的食物。',
+    options: ['专门的鸥粮', '面包', '火腿肠'],
+    correctIndex: 0,
+    explanation: '请在上线前根据确认的科普文案完善讲解。',
+  }],
+  ending: { text: '填写连接下一章的悬念或约定。', nextChapterId: 'chapter-03' },
+};
+
+export default chapter;

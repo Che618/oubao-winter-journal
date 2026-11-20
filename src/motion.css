@@ -1,0 +1,418 @@
+/* 共享动效层：自动应用到后续章节，不参与正文尺寸测量。 */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.motion-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 4px;
+  color: #708c78;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.motion-toggle:disabled {
+  opacity: 0.55;
+}
+.river-glints {
+  position: absolute;
+  inset: 55% 0 0;
+  pointer-events: none;
+}
+.river-glints i {
+  position: absolute;
+  width: 65px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #fffce6, transparent);
+  opacity: 0.25;
+  left: 12%;
+  top: 32%;
+}
+.river-glints i:nth-child(2) {
+  left: 76%;
+  top: 15%;
+  width: 38px;
+}
+.river-glints i:nth-child(3) {
+  left: 6%;
+  top: 72%;
+  width: 100px;
+}
+.river-glints i:nth-child(4) {
+  left: 85%;
+  top: 62%;
+  width: 75px;
+}
+.river-glints i:nth-child(5) {
+  left: 45%;
+  top: 88%;
+  width: 45px;
+}
+.letter-save {
+  position: relative;
+}
+.letter-seal {
+  position: absolute;
+  right: 70px;
+  top: -44px;
+  color: #b87053;
+  font-size: 9px;
+  letter-spacing: 1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transform: rotate(12deg);
+  pointer-events: none;
+}
+.letter-seal img {
+  width: 27px;
+  height: 25px;
+  object-fit: contain;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* 只改变合成层或透明度；不移动书本容器，不影响翻页库的触摸坐标。 */
+  [data-motion='on'] .watercolor-river {
+    animation: river-drift 18s ease-in-out infinite alternate;
+  }
+  [data-motion='on'] .sky-birds {
+    animation: birds-drift 24s ease-in-out infinite alternate;
+  }
+  [data-motion='on'] .sky-birds path {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: wings-breathe 3s ease-in-out infinite alternate;
+  }
+  [data-motion='on'] .sky-birds path:nth-child(2) {
+    animation-delay: -0.9s;
+  }
+  [data-motion='on'] .sky-birds path:nth-child(3) {
+    animation-delay: -1.8s;
+  }
+  [data-motion='on'] .river-glints i {
+    animation: water-glimmer 5s ease-in-out infinite;
+  }
+  [data-motion='on'] .river-glints i:nth-child(2n) {
+    animation-delay: -2.5s;
+    animation-duration: 7s;
+  }
+  [data-motion='on'] .river-glints i:nth-child(3n) {
+    animation-delay: -1.5s;
+    animation-duration: 6s;
+  }
+
+  /* data-motion-ready 仅在当前书页翻稳后开启；离页即停止，重返时重新入场。 */
+  [data-motion='on']
+    .book-page[data-motion-ready='true']
+    .page-inner:not(.flow-inner)
+    > :is(.eyebrow, h2, .soft-copy, .intro-handwriting, .intro-copy, .video-frame, .aerial-photo) {
+    animation: page-arrive 0.6s ease-out both;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .page-inner > h2 {
+    animation-delay: 0.06s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .page-inner > .soft-copy {
+    animation-delay: 0.12s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .intro-copy {
+    animation-delay: 0.18s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .aerial-photo {
+    animation-name: photo-arrive;
+    animation-delay: 0.15s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .video-frame {
+    animation-name: film-arrive;
+    animation-delay: 0.15s;
+  }
+  /* 正文只做透明度过渡，避免文字暂时越过分页边界。 */
+  [data-motion='on']
+    .book-page[data-motion-ready='true']
+    .flow-inner
+    > :is(.eyebrow, .flow-title, .flow-subtitle, .flow-author, .prose) {
+    animation: ink-appear 0.55s ease-out both;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .prose {
+    animation-delay: 0.08s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .toc-row {
+    animation: ink-appear 0.45s ease-out both;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .toc-row:nth-child(2) {
+    animation-delay: 0.06s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .toc-row:nth-child(3) {
+    animation-delay: 0.12s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .toc-row:nth-child(4) {
+    animation-delay: 0.18s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .toc-row:nth-child(5) {
+    animation-delay: 0.24s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .toc-row:nth-child(6) {
+    animation-delay: 0.3s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .toc-row:nth-child(7) {
+    animation-delay: 0.36s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .toc-row:nth-child(8) {
+    animation-delay: 0.42s;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .family-portrait > img {
+    animation: family-sway 6s ease-in-out infinite;
+    transform-origin: 50% 85%;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .portrait-wash {
+    animation: wash-breathe 6s ease-in-out infinite alternate;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .intro-composition > img {
+    animation: gull-greeting 4.6s ease-in-out infinite;
+    transform-origin: 50% 85%;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .intro-footprint {
+    animation: footprint-land 0.7s 0.2s ease-out both;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .open-book svg {
+    animation: invite-next 2.6s ease-in-out infinite;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .page-corner {
+    animation: corner-hint 4s 1.5s ease-in-out infinite;
+    transform-origin: bottom right;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .journey-path > path:first-child {
+    animation: route-flow 12s linear infinite;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .journey-gull {
+    animation: gull-travel 5s ease-in-out infinite;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .letter-seal {
+    animation: seal-land 0.65s cubic-bezier(0.2, 0.7, 0.2, 1.2) both;
+  }
+  [data-motion='on'] .contents-dialog[open] {
+    animation: dialog-arrive 0.25s ease-out both;
+  }
+  [data-motion='on'] .image-dialog[open] figure {
+    animation: ink-appear 0.25s ease-out both;
+  }
+  [data-motion='on'] .toast {
+    animation: toast-arrive 0.25s ease-out both;
+  }
+}
+
+@keyframes river-drift {
+  from {
+    transform: translate3d(-1%, 0, 0) scale(1.04);
+  }
+  to {
+    transform: translate3d(1%, -5px, 0) scale(1.04);
+  }
+}
+@keyframes birds-drift {
+  from {
+    transform: translate3d(14px, 2px, 0);
+  }
+  to {
+    transform: translate3d(-45px, -12px, 0);
+  }
+}
+@keyframes wings-breathe {
+  from {
+    transform: scaleY(0.8);
+  }
+  to {
+    transform: scaleY(1.1);
+  }
+}
+@keyframes water-glimmer {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: scaleX(0.65);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scaleX(1.1);
+  }
+}
+@keyframes page-arrive {
+  from {
+    opacity: 0.3;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ink-appear {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes photo-arrive {
+  from {
+    opacity: 0.3;
+    transform: translateY(7px) rotate(2deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(1deg);
+  }
+}
+@keyframes film-arrive {
+  from {
+    opacity: 0.3;
+    transform: translateY(7px) rotate(-3deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-1.5deg);
+  }
+}
+@keyframes family-sway {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-0.5deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(0.5deg);
+  }
+}
+@keyframes wash-breathe {
+  from {
+    opacity: 0.65;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+@keyframes gull-greeting {
+  0%,
+  65%,
+  100% {
+    transform: rotate(-5deg) translateY(0);
+  }
+  30% {
+    transform: rotate(-1deg) translateY(-5px);
+  }
+}
+@keyframes footprint-land {
+  from {
+    opacity: 0;
+    transform: rotate(30deg) scale(1.5);
+  }
+  to {
+    opacity: 0.5;
+    transform: rotate(22deg) scale(1);
+  }
+}
+@keyframes invite-next {
+  0%,
+  65%,
+  100% {
+    transform: translateX(0);
+  }
+  35% {
+    transform: translateX(5px);
+  }
+}
+@keyframes corner-hint {
+  0%,
+  75%,
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  85% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+@keyframes route-flow {
+  to {
+    stroke-dashoffset: -110;
+  }
+}
+@keyframes gull-travel {
+  0%,
+  100% {
+    transform: rotate(-9deg) translateY(0);
+  }
+  50% {
+    transform: rotate(-5deg) translateY(-7px);
+  }
+}
+@keyframes seal-land {
+  0% {
+    opacity: 0;
+    transform: rotate(22deg) scale(1.7);
+  }
+  65% {
+    opacity: 1;
+    transform: rotate(10deg) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(12deg) scale(1);
+  }
+}
+@keyframes dialog-arrive {
+  from {
+    opacity: 0.4;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes toast-arrive {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 600px) {
+  .header-actions {
+    gap: 11px;
+  }
+  .motion-toggle {
+    gap: 3px;
+    font-size: 9px;
+    letter-spacing: 0;
+  }
+  .site-brand small,
+  .site-brand .brand-divider {
+    display: none;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  [data-motion='on'] .photo-button img {
+    transition: filter 0.25s;
+  }
+  [data-motion='on'] .photo-button:hover img {
+    filter: saturate(1.1) brightness(1.03);
+  }
+  [data-motion='on'] .toc-row:not(:disabled) {
+    transition: background 0.2s;
+  }
+  [data-motion='on'] .toc-row:not(:disabled):hover {
+    background: #a5b99b15;
+  }
+}

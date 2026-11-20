@@ -1,0 +1,23 @@
+node_modules/
+dist/
+test-results/
+playwright-report/
+.DS_Store
+*.local
+*.tsbuildinfo
+
+# 原始策划、文稿及素材只保留本地；网页使用 public/assets 中的派生图。
+/红嘴鸥第*/
+*.doc
+*.docx
+*.rar
+*.zip
+*.7z
+*.tar
+*.gz
+
+# 本地环境变量与编辑器临时文件
+.env
+.env.*
+!.env.example
+~$*
