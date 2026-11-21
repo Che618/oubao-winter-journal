@@ -115,7 +115,7 @@
   color: #6a4d35;
   border-bottom: 1px dashed #a77d5440;
 }
-.chapter-links button > span {
+.chapter-links button > span:first-child {
   font:
     italic 10px Georgia,
     serif;

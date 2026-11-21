@@ -1,0 +1,31 @@
+@font-face {
+  font-family: 'Journal Kai';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/diary-kai.woff2') format('woff2');
+}
+.diary-flow,
+.intro-copy {
+  font-family: 'Journal Kai', 'KaiTi', 'STKaiti', serif;
+  font-weight: 400;
+}
+.diary-flow .eyebrow {
+  flex-direction: column;
+  gap: 8px;
+}
+.diary-wordmark {
+  font-family: 'Ma Shan Zheng', 'STXingkai', cursive;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 1.25;
+  letter-spacing: 4px;
+  color: #3c7065;
+}
+.chapter-links .diary-wordmark {
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+.diary-flow .flow-title {
+  font-weight: 400;
+}

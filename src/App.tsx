@@ -107,24 +107,39 @@ export default function App() {
   useEffect(() => {
     if (!content || size.width < 180 || size.height < 180) return;
     let cancelled = false;
-    document.fonts.ready.then(() => {
-      if (cancelled) return;
-      try {
-        const nextPages = buildPages(content, size.width, size.height);
-        const previous = savedPosition.current;
-        const nextIndex =
-          previous?.chapterId === content.id
-            ? Math.max(
-                0,
-                nextPages.findIndex((page) => page.id === previous.pageId),
-              )
-            : 0;
-        setIndex(nextIndex);
-        setPages(nextPages);
-      } catch (reason) {
-        setError(reason instanceof Error ? reason.message : '书页排版失败。');
-      }
-    });
+    // 字体按文字分片加载；先加载本章用到的字形，再测量，避免字体替换后正文超页。
+    Promise.all([
+      document.fonts.load(
+        '17px "Journal Kai"',
+        [
+          content.diary.title,
+          content.diary.signature,
+          ...content.diary.paragraphs,
+          ...content.opening.paragraphs,
+        ].join(''),
+      ),
+      document.fonts.load('30px "Ma Shan Zheng"', '鸥宝日记'),
+    ])
+      .catch(() => [])
+      .then(() => document.fonts.ready)
+      .then(() => {
+        if (cancelled) return;
+        try {
+          const nextPages = buildPages(content, size.width, size.height);
+          const previous = savedPosition.current;
+          const nextIndex =
+            previous?.chapterId === content.id
+              ? Math.max(
+                  0,
+                  nextPages.findIndex((page) => page.id === previous.pageId),
+                )
+              : 0;
+          setIndex(nextIndex);
+          setPages(nextPages);
+        } catch (reason) {
+          setError(reason instanceof Error ? reason.message : '书页排版失败。');
+        }
+      });
     return () => {
       cancelled = true;
     };

@@ -46,6 +46,23 @@ for (const viewport of [
     await expect(page.locator('.reading-position')).toContainText('目录');
     await page
       .getByRole('navigation', { name: '本章阅读目录' })
+      .getByRole('button', { name: '鸥宝日记' })
+      .click();
+    await expect(page.locator('.book-page[aria-hidden="false"] .diary-wordmark')).toHaveText(
+      '鸥宝日记',
+    );
+    expect(
+      await page.evaluate(
+        () =>
+          document.fonts.check('17px "Journal Kai"', '初见汉江') &&
+          document.fonts.check('30px "Ma Shan Zheng"', '鸥宝日记'),
+      ),
+    ).toBe(true);
+    await page.screenshot({ path: `test-results/production-diary-${viewport.width}.png` });
+    await page.getByRole('button', { name: '打开全书目录' }).click();
+    await page.locator('.section-tabs').getByRole('button', { name: '目录', exact: true }).click();
+    await page
+      .getByRole('navigation', { name: '本章阅读目录' })
       .getByRole('button', { name: '江边剪报' })
       .click();
     const photo = page.locator('.book-page[aria-hidden="false"] img').first();

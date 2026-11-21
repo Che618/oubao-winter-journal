@@ -49,9 +49,14 @@ function paginateFlow(
     pages.push(page);
     const label = document.createElement('div');
     label.className = 'eyebrow';
-    label.textContent = diary
-      ? `${chapter.diary.date} · ${chapter.diary.weekday} · ${chapter.diary.weather}`
-      : '江边剪报 · 汉中的冬天';
+    if (diary) {
+      const wordmark = document.createElement('span');
+      wordmark.className = 'diary-wordmark';
+      wordmark.textContent = '鸥宝日记';
+      const date = document.createElement('span');
+      date.textContent = `${chapter.diary.date} · ${chapter.diary.weekday} · ${chapter.diary.weather}`;
+      label.append(wordmark, date);
+    } else label.textContent = '江边剪报 · 汉中的冬天';
     inner.append(label);
     if (page.title) {
       const heading = document.createElement('h2');

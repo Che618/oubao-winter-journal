@@ -258,7 +258,7 @@ export function PageView(props: PageViewProps) {
     case 'contents':
       if (chapter.contentsDesign) {
         const links = [
-          { section: 'diary', title: '鸥宝的日记' },
+          { section: 'diary', title: '鸥宝日记' },
           { section: 'video', title: '影像日记' },
           { section: 'article', title: '江边剪报' },
           ...(chapter.album?.length ? [{ section: 'album', title: '汉江影像' }] : []),
@@ -277,7 +277,9 @@ export function PageView(props: PageViewProps) {
                   }
                 >
                   <span>{String(i + 1).padStart(2, '0')}</span>
-                  {link.title}
+                  <span className={link.section === 'diary' ? 'diary-wordmark' : undefined}>
+                    {link.title}
+                  </span>
                   <ArrowRight size={12} />
                 </button>
               ))}
@@ -375,9 +377,14 @@ export function PageView(props: PageViewProps) {
           className={`page-inner flow-inner ${page.section === 'diary' ? 'diary-flow' : 'article-flow'}`}
         >
           <div className="eyebrow">
-            {page.section === 'diary'
-              ? `${chapter.diary.date} · ${chapter.diary.weekday} · ${chapter.diary.weather}`
-              : '江边剪报 · 汉中的冬天'}
+            {page.section === 'diary' ? (
+              <>
+                <span className="diary-wordmark">鸥宝日记</span>
+                <span>{`${chapter.diary.date} · ${chapter.diary.weekday} · ${chapter.diary.weather}`}</span>
+              </>
+            ) : (
+              '江边剪报 · 汉中的冬天'
+            )}
           </div>
           {page.title && <h2 className="flow-title">{page.title}</h2>}
           {page.subtitle && <p className="flow-subtitle">{page.subtitle}</p>}
