@@ -2,7 +2,8 @@
 
 - 曲名：Dream Culture
 - 作者：Kevin MacLeod
-- 文件：`dream-culture.mp3`，从作者官网下载，未剪辑或转码。
+- 网页文件：`dream-culture-web.mp3`，从作者官网原曲转码为80 kbps、32 kHz双声道MP3以加快加载，乐曲内容未剪辑，约2.14 MB。
+- 原下载文件：保留在本地 `local-audio-originals/dream-culture.mp3`，未剪辑或转码，不参与网站发布。
 - 官网目录信息：钢琴、打击乐；70 BPM；3分34秒；Calming、Relaxed、Uplifting。
 - 曲目来源：https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300046
 - 下载来源：https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dream%20Culture.mp3
@@ -21,4 +22,4 @@
 >
 > https://creativecommons.org/licenses/by/4.0/
 
-现已接入网页。点击翻开日记、继续阅读或音乐开关后播放；音量设置为20%，播放视频或切到后台时暂停。文件未剪辑，使用播放器循环，不承诺无缝循环。读者可在目录底部查看曲名、作者、来源与授权链接。
+现已接入网页。进入即预加载并尝试自动播放；浏览器拦截时由第一次触碰或点击音乐按钮解锁。每次进入默认开启，音量设置为20%，播放视频或切到后台时暂停。网页文件已压缩转码，乐曲内容未剪辑，使用播放器循环，不承诺无缝循环。读者可在目录底部查看曲名、作者、转码说明、来源与授权链接。

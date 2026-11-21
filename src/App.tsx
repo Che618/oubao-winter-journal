@@ -234,8 +234,8 @@ export default function App() {
       <audio
         ref={music.audioRef}
         className="background-music"
-        src={`${import.meta.env.BASE_URL}audio/dream-culture.mp3`}
-        preload="none"
+        src={`${import.meta.env.BASE_URL}audio/dream-culture-web.mp3`}
+        preload="auto"
         loop
         aria-hidden="true"
       />
@@ -275,7 +275,15 @@ export default function App() {
             className={`music-toggle ${music.playing ? 'is-playing' : ''}`}
             aria-label="背景音乐"
             aria-pressed={music.enabled}
-            title={music.blocked ? '重试播放音乐' : music.enabled ? '关闭背景音乐' : '播放背景音乐'}
+            title={
+              music.blocked
+                ? '重试播放音乐'
+                : music.needsGesture
+                  ? '轻触播放音乐'
+                  : music.enabled
+                    ? '关闭背景音乐'
+                    : '播放背景音乐'
+            }
             onClick={music.toggle}
           >
             {music.enabled ? <Music2 size={16} /> : <VolumeX size={16} />}
@@ -284,9 +292,11 @@ export default function App() {
                 ? '重试音乐'
                 : music.playing
                   ? '音乐开'
-                  : music.enabled
-                    ? '音乐待播'
-                    : '音乐关'}
+                  : music.needsGesture && music.enabled
+                    ? '轻触听音乐'
+                    : music.enabled
+                      ? '音乐待播'
+                      : '音乐关'}
             </span>
             <i className="music-bars" aria-hidden="true">
               <b />
@@ -494,6 +504,7 @@ export default function App() {
           <div className="music-credit">
             <span className="eyebrow">音乐 · 冬日伴奏</span>
             <p>“Dream Culture” — Kevin MacLeod</p>
+            <p>网页音频已压缩，乐曲内容未剪辑。</p>
             <p>
               <a
                 href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300046"

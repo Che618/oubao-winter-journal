@@ -170,7 +170,7 @@ description: 为“鸥宝越冬志”手机端翻书 H5 的页面设计、交互
 
 现已按用户后续要求建立 React、TypeScript、Vite 项目，通过 GitHub Actions 构建并发布到 GitHub Pages。开发与扩展说明见 `README.md`；章节目录在 `src/content/chapters.ts`，第一章内容在 `src/content/chapters/chapter-01.ts`，新增章节模板为 `src/content/chapters/chapter-template.ts.example`。正文分页与翻书交互放在 `src/book` 中，后续章优先复用这些实现。
 
-背景音乐使用 `public/audio/dream-culture.mp3`，为 Kevin MacLeod 的《Dream Culture》（CC BY 4.0），来源见同目录 `CREDITS.md`，目录底部保留可见署名和授权链接。`src/book/useBackgroundMusic.ts` 管理全书共享音轨：读者手势后播放、循环、开关记忆、视频播放及后台暂停；后续章节直接复用，不另建音轨或移除署名。
+背景音乐使用压缩版 `public/audio/dream-culture-web.mp3`，为 Kevin MacLeod 的《Dream Culture》（CC BY 4.0），来源见同目录 `CREDITS.md`，目录底部保留可见署名、转码说明和授权链接。原下载音频保留在本地、不发布的 `local-audio-originals`。`src/book/useBackgroundMusic.ts` 管理全书共享音轨：每次进入默认开启、提前加载并尝试自动播放，受浏览器限制时由首次触碰解锁；循环、视频播放及后台暂停，本次手动关闭后不误恢复。后续章节直接复用，不另建音轨或移除署名。
 
 网页派生素材存放在 `public/assets`，原始素材保持原位。现有第一章视频、360°全景为待更新状态，回信仅在当前浏览器本机保存；这些状态不能误写成正式内容已齐备或已公开发布。页面新增的引导句、图注与目录副标题仍可随编辑意见调整。
 

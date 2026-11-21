@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
+test.use({ launchOptions: { args: ['--autoplay-policy=user-gesture-required'] } });
+
 async function openBook(page: Page) {
   await page.goto('/');
   await page.locator('.flip-engine[data-ready="true"]').waitFor();
@@ -7,16 +9,20 @@ async function openBook(page: Page) {
 const paused = (page: Page) =>
   page.locator('.background-music').evaluate((el) => (el as HTMLAudioElement).paused);
 
-test('开书后播放真实音频，暂停选择持久保存，署名可见且手机按钮不溢出', async ({ page }) => {
+test('进入即加载，自动播放被拦截后轻触封面播放；关闭后不误恢复，重新进入默认开启', async ({
+  page,
+}) => {
   const requests: string[] = [];
   page.on('request', (request) => {
     if (request.url().endsWith('.mp3')) requests.push(request.url());
   });
   await page.setViewportSize({ width: 320, height: 568 });
   await openBook(page);
-  expect(requests).toHaveLength(0);
+  await expect.poll(() => requests.length).toBeGreaterThan(0);
   expect(await paused(page)).toBe(true);
-  await page.getByRole('button', { name: '翻开我们的故事' }).click();
+  await expect(page.getByRole('button', { name: '背景音乐' })).toContainText('轻触听音乐');
+  // 不翻书，轻触页面空白区域即可解锁有声播放。
+  await page.mouse.click(8, 42);
   await expect.poll(() => paused(page)).toBe(false);
   await expect
     .poll(() =>
@@ -24,13 +30,12 @@ test('开书后播放真实音频，暂停选择持久保存，署名可见且�
     )
     .toBeGreaterThan(0);
   expect(
-    await page
-      .locator('.background-music')
-      .evaluate((el) => ({
-        volume: (el as HTMLAudioElement).volume,
-        loop: (el as HTMLAudioElement).loop,
-      })),
+    await page.locator('.background-music').evaluate((el) => ({
+      volume: (el as HTMLAudioElement).volume,
+      loop: (el as HTMLAudioElement).loop,
+    })),
   ).toEqual({ volume: 0.2, loop: true });
+  await expect(page.getByRole('button', { name: '翻开我们的故事' })).toBeVisible();
   await page.getByRole('button', { name: '背景音乐' }).click();
   await expect.poll(() => paused(page)).toBe(true);
   await page.getByRole('button', { name: '下一页', exact: true }).click();
@@ -39,10 +44,11 @@ test('开书后播放真实音频，暂停选择持久保存，署名可见且�
   await page.locator('.flip-engine[data-ready="true"]').waitFor();
   await expect(page.getByRole('button', { name: '背景音乐' })).toHaveAttribute(
     'aria-pressed',
-    'false',
+    'true',
   );
-  await page.getByRole('button', { name: '翻开我们的故事' }).click();
   expect(await paused(page)).toBe(true);
+  // 被拦截时点击音乐按钮直接播放，不会被误当成关闭。
+  await expect(page.getByRole('button', { name: '背景音乐' })).toContainText('轻触听音乐');
   await page.getByRole('button', { name: '背景音乐' }).click();
   await expect.poll(() => paused(page)).toBe(false);
   await page.getByRole('button', { name: '打开全书目录' }).click();
@@ -71,7 +77,7 @@ test('真实媒体播放时暂停BGM，视频暂停后恢复，关闭音乐后�
   await page.evaluate(async () => {
     const video = document.createElement('video');
     video.id = 'test-video';
-    video.src = new URL('audio/dream-culture.mp3', location.href).href;
+    video.src = new URL('audio/dream-culture-web.mp3', location.href).href;
     video.muted = true;
     document.querySelector('.book-page[aria-hidden="false"] .page-inner')!.append(video);
     await video.play();
@@ -91,13 +97,13 @@ test('真实媒体播放时暂停BGM，视频暂停后恢复，关闭音乐后�
 });
 
 test('音频加载失败可重试，不影响翻书', async ({ page }) => {
-  await page.route('**/audio/dream-culture.mp3', (route) => route.abort());
+  await page.route('**/audio/dream-culture-web.mp3', (route) => route.abort());
   await openBook(page);
   await page.getByRole('button', { name: '翻开我们的故事' }).click();
   const toggle = page.getByRole('button', { name: '背景音乐' });
   await expect(toggle).toContainText('重试音乐');
   await expect(page.locator('.reading-position')).toContainText('目录');
-  await page.unroute('**/audio/dream-culture.mp3');
+  await page.unroute('**/audio/dream-culture-web.mp3');
   await toggle.click();
   await expect.poll(() => paused(page)).toBe(false);
   await expect(toggle).toContainText('音乐开');
