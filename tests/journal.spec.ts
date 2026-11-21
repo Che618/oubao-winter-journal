@@ -75,6 +75,10 @@ test('按顺序翻开、滑动和返回；目录只开放已上线章节', async
   await expect(page.locator('.reading-position')).toContainText('目录');
   await expect(page.locator('.page-contents .toc-row:disabled')).toHaveCount(7);
   await page.getByRole('button', { name: '下一页', exact: true }).click();
+  await expect(page.locator('.book-page[aria-hidden="false"] h2')).toHaveText('日记扉页');
+  await page.getByRole('button', { name: '下一页', exact: true }).click();
+  await expect(page.locator('.book-page[aria-hidden="false"] h2')).toHaveText('第一章 · 先至');
+  await page.getByRole('button', { name: '下一页', exact: true }).click();
   await expect(page.locator('.reading-position')).toContainText('认识鸥宝');
   const box = await page.locator('.book-size').boundingBox();
   await page.mouse.move(box!.x + box!.width - 45, box!.y + box!.height / 2);

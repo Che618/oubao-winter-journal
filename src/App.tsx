@@ -25,6 +25,8 @@ import { useBackgroundMusic } from './book/useBackgroundMusic';
 
 const pageNames: Record<BookPage['kind'], string> = {
   cover: '封面',
+  artwork: '日记装帧',
+  album: '汉江影像',
   contents: '目录',
   intro: '认识鸥宝',
   flow: '日记',

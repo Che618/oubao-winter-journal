@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { mkdir, readdir, access } from 'node:fs/promises';
+import { mkdir, readdir, access, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -43,6 +43,10 @@ await access(source);
 await mkdir(output, { recursive: true });
 const jobs = [
   ['日记本设计素材/日记本单页.png', 'paper.webp', 900],
+  ['日记本设计素材/1 未翻开LOGO页 设计 zsr.png', 'notebook-logo.webp', 900],
+  ['日记本设计素材/2 翻开封面页 设计 zsr.png', 'notebook-title.webp', 900],
+  ['日记本设计素材/3 翻开封面页+目录 第一期 先至 设计 zsr.png', 'notebook-chapter.webp', 900],
+  ['日记本设计素材/纯翻开空白页   备选.png', 'notebook-blank.webp', 900],
   ['日记本设计素材/欧宝脚印.png', 'footprint.webp', 220],
   ['红嘴鸥IP设计素材/欧宝 1 zsr.png', 'oubao.webp', 600],
   ['红嘴鸥IP设计素材/红嘴鸥一家三口.png', 'family.webp', 900],
@@ -63,4 +67,18 @@ await sharp(blank)
   .webp({ quality: 85 })
   .toFile(path.join(output, 'river-watercolor.webp'));
 const photoCount = await preparePhotos(path.join(source, '红嘴鸥照片'), 'chapter-01');
+const photoFiles = (await readdir(path.join(source, '红嘴鸥照片')))
+  .filter((name) => /\.(jpe?g|png|webp)$/i.test(name))
+  .sort();
+const manifest = [
+  ...jobs.map(([file, name]) => ({ source: `第一章 平面素材打包/${file}`, asset: name })),
+  ...photoFiles.map((file, i) => ({
+    source: `红嘴鸥照片/${file}`,
+    asset: `chapter-01/photo-${String(i + 1).padStart(2, '0')}.webp`,
+  })),
+];
+await writeFile(
+  path.join(output, 'chapter-01-sources.json'),
+  JSON.stringify(manifest, null, 2) + '\n',
+);
 console.log(`已生成 ${jobs.length + photoCount + 1} 张网页派生素材，原始文件未改动。`);

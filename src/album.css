@@ -1,0 +1,94 @@
+.family-companions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin: 24px auto 8px;
+  max-width: 230px;
+}
+.family-companions img {
+  height: 130px;
+  object-fit: contain;
+}
+.family-companions figcaption {
+  text-align: center;
+  font-size: 12px;
+  margin-top: 8px;
+  color: #a27e65;
+  letter-spacing: 3px;
+}
+.artwork-inner,
+.album-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.artwork-inner h2,
+.album-inner h2 {
+  font-size: clamp(19px, 5vw, 25px);
+  line-height: 1.5;
+  letter-spacing: 2px;
+  margin: 0;
+  flex-shrink: 0;
+}
+.artwork-image {
+  flex: 1;
+  min-height: 0;
+}
+.artwork-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.artwork-note {
+  font-size: 10px;
+  color: #9a907b;
+  text-align: center;
+  letter-spacing: 1px;
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+.album-photos {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+.album-photos figure {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 7px;
+  background: #fffcf2;
+  box-shadow: 0 2px 8px #806d4e15;
+}
+.album-photos .photo-button {
+  flex: 1;
+  min-height: 0;
+}
+.album-photos img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.album-photos figcaption {
+  flex-shrink: 0;
+  margin-top: 6px;
+  font-size: 10px;
+  color: #8e846d;
+  line-height: 1.7;
+  text-align: center;
+}
+@container (max-height:460px) {
+  .artwork-inner,
+  .album-inner {
+    gap: 9px;
+  }
+  .album-photos {
+    gap: 10px;
+  }
+  .album-photos figcaption,
+  .artwork-note {
+    font-size: 9px;
+  }
+}

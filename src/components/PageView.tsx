@@ -353,6 +353,22 @@ export function PageView(props: PageViewProps) {
               <p key={i}>{text}</p>
             ))}
           </div>
+          {chapter.opening.companions && (
+            <div className="family-companions" aria-label="和我一起远行的家人">
+              {chapter.opening.companions.map((companion) => (
+                <figure key={companion.name}>
+                  <button
+                    className="photo-button"
+                    aria-label={`看看${companion.name}`}
+                    onClick={() => openImage(companion.src, companion.alt)}
+                  >
+                    <LazyImage src={companion.src} alt={companion.alt} />
+                  </button>
+                  <figcaption>{companion.name}</figcaption>
+                </figure>
+              ))}
+            </div>
+          )}
           <img className="intro-footprint" src={asset('footprint.webp')} alt="" />
         </div>
       );
@@ -515,6 +531,45 @@ export function PageView(props: PageViewProps) {
               <span>360°鸟瞰体验，待更新。</span>
             </p>
           )}
+        </div>
+      );
+      break;
+    case 'artwork':
+      content = (
+        <div className="page-inner artwork-inner">
+          <div className="eyebrow">鸥宝的日记本</div>
+          <h2>{page.artwork.title}</h2>
+          <button
+            className="photo-button artwork-image"
+            aria-label={`放大${page.artwork.title}`}
+            onClick={() => openImage(page.artwork.src, page.artwork.alt)}
+          >
+            <LazyImage src={page.artwork.src} alt={page.artwork.alt} />
+          </button>
+          <p className="artwork-note">轻触画面，展开看看</p>
+        </div>
+      );
+      break;
+    case 'album':
+      content = (
+        <div className="page-inner album-inner">
+          <div className="eyebrow">汉江影像 · 冬日相簿</div>
+          <h2>{page.spread.title}</h2>
+          <div className="album-photos">
+            {page.spread.photos.map((photo) => (
+              <figure key={photo.src}>
+                <button
+                  className="photo-button"
+                  aria-label={`放大照片：${photo.alt}`}
+                  onClick={() => openImage(photo.src, photo.alt)}
+                >
+                  <LazyImage src={photo.src} alt={photo.alt} />
+                </button>
+                <figcaption>{photo.caption}</figcaption>
+              </figure>
+            ))}
+          </div>
+          <p className="artwork-note">轻触照片，收藏一江冬色</p>
         </div>
       );
       break;

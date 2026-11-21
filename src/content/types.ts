@@ -15,6 +15,10 @@ export interface ChapterSummary {
 
 export interface ChapterContent {
   id: string;
+  /** 原有平面设计作为独立扉页呈现，不用小图挤进正文。 */
+  frontMatter?: ArtworkPage[];
+  closingArtwork?: ArtworkPage[];
+  album?: { id: string; title: string; photos: { src: string; alt: string; caption: string }[] }[];
   opening: {
     greeting?: string;
     title: string;
@@ -22,6 +26,7 @@ export interface ChapterContent {
     illustration: string;
     illustrationAlt: string;
     annotation?: string;
+    companions?: { name: string; src: string; alt: string }[];
   };
   diary: {
     title: string;
@@ -42,6 +47,13 @@ export interface ChapterContent {
   /** 后续小课堂、拼图等在此注册，不必改动翻书逻辑。 */
   activities?: ActivityConfig[];
   ending: { text: string; nextChapterId?: string };
+}
+
+export interface ArtworkPage {
+  id: string;
+  title: string;
+  src: string;
+  alt: string;
 }
 
 export type ActivityConfig =
@@ -67,6 +79,8 @@ export interface FlowPage {
   blocks: ContentBlock[];
 }
 export type BookPage =
+  | { id: string; kind: 'artwork'; artwork: ArtworkPage }
+  | { id: string; kind: 'album'; spread: NonNullable<ChapterContent['album']>[number] }
   | { id: string; kind: 'cover' | 'contents' | 'intro' | 'video' | 'journey' | 'aerial' | 'letter' }
   | { id: string; kind: 'activity'; activity: ActivityConfig }
   | FlowPage;

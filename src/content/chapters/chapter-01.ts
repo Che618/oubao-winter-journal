@@ -7,15 +7,52 @@ const photo = (number: number, alt: string, caption: string): ContentBlock => ({
   alt,
   caption,
 });
+const albumPhoto = (number: number, alt: string, caption: string) => ({
+  src: asset(`chapter-01/photo-${String(number).padStart(2, '0')}.webp`),
+  alt,
+  caption,
+});
 
 const chapter: ChapterContent = {
   id: 'chapter-01',
+  frontMatter: [
+    {
+      id: 'title-design',
+      title: '日记扉页',
+      src: asset('notebook-title.webp'),
+      alt: '原设计扉页：水彩汉江中的日记本，一家三口站在山水画前',
+    },
+    {
+      id: 'chapter-design',
+      title: '第一章 · 先至',
+      src: asset('notebook-chapter.webp'),
+      alt: '原设计章节页：米色横线纸、珊瑚色脚印与第一期先至标题',
+    },
+  ],
+  closingArtwork: [
+    {
+      id: 'blank-design',
+      title: '把下一页留给冬天',
+      src: asset('notebook-blank.webp'),
+      alt: '原设计留白页：青绿色水彩江景环绕着空白日记本',
+    },
+    {
+      id: 'logo-design',
+      title: '合上日记，下次再见',
+      src: asset('notebook-logo.webp'),
+      alt: '原设计封套：青绿色江景中的日记本，左下角是一家三口和标识',
+    },
+  ],
   opening: {
     greeting: '你好呀，我是',
     title: '鸥宝！',
     illustration: asset('oubao.webp'),
     illustrationAlt: '鸥宝展开翅膀向你打招呼',
     annotation: '4个月的我\n第一次远行',
+    companions: [
+      { name: '妈妈', src: asset('mother.webp'), alt: '围着粉色围巾、穿着粉色衣服的鸥妈妈' },
+      { name: '爸爸', src: asset('father.webp'), alt: '戴墨镜、系领带、挎着相机的鸥爸爸' },
+    ],
     paragraphs: [
       '嘎嘎！🥳我是鸥宝！一只来自西伯利亚的小红嘴鸥～',
       '我才4个月哦，是鸥鸥家族里的小萌新，第一次跟着大家一起长途飞行！',
@@ -92,6 +129,80 @@ const chapter: ChapterContent = {
     ],
     aerial: { src: asset('chapter-01/photo-06.webp'), alt: '从空中俯瞰汉江与沿岸观鸥的人群' },
   },
+  album: [
+    {
+      id: 'album-01',
+      title: '在汉江，轻轻落脚',
+      photos: [
+        albumPhoto(1, '暖色江面前，一只红嘴鸥在木桩上张开双翼', '第一次落脚，先舒展一下翅膀。'),
+        albumPhoto(3, '一只红嘴鸥展开双翼，另一只停在木桩上', '江面上，也有伙伴的回应。'),
+      ],
+    },
+    {
+      id: 'album-02',
+      title: '风从翅膀下经过',
+      photos: [
+        albumPhoto(2, '红嘴鸥飞过汉江，远处是城市与江岸', '迎着冬日的光，飞向汉江。'),
+        albumPhoto(12, '浅色江景前，一只红嘴鸥展开翅膀飞行', '把轻盈的身影留在风里。'),
+      ],
+    },
+    {
+      id: 'album-03',
+      title: '每一次振翅',
+      photos: [
+        albumPhoto(4, '红嘴鸥贴近水面飞行，双翼与倒影相映', '掠过水面，留下一道倒影。'),
+        albumPhoto(5, '几只红嘴鸥在江边木桩上方交错展翅', '看，伙伴们都来了。'),
+      ],
+    },
+    {
+      id: 'album-04',
+      title: '暖光里的身影',
+      photos: [
+        albumPhoto(8, '金色树影前，一只红嘴鸥振翅飞起', '岸边的暖色，映在白羽上。'),
+        albumPhoto(9, '江水上方，一只红嘴鸥在木桩边展开双翼', '每次起飞，都带着新的好奇。'),
+      ],
+    },
+    {
+      id: 'album-05',
+      title: '和江水打个招呼',
+      photos: [
+        albumPhoto(10, '红嘴鸥在水面展翅，脚边溅起水花', '水花是汉江的招呼。'),
+        albumPhoto(18, '一只红嘴鸥安静浮在浅色水面上', '也可以慢下来，漂一会儿。'),
+      ],
+    },
+    {
+      id: 'album-06',
+      title: '岸边，都是相逢',
+      photos: [
+        albumPhoto(6, '从空中看汉江岸线，水面有鸥群，岸边聚集着观鸥人群', '从空中看看冬日的江岸。'),
+        albumPhoto(7, '从空中看城市与江岸步道，市民沿岸观鸥', '一条江，连接城市与飞鸟。'),
+      ],
+    },
+    {
+      id: 'album-07',
+      title: '江边来了许多人',
+      photos: [
+        albumPhoto(11, '江边步道上聚集着人群，身旁有大量红嘴鸥飞舞', '一场冬日的相逢。'),
+        albumPhoto(16, '阳光下的江边，人们与成群飞鸟同在画面中', '镜头里，是人与飞鸟相遇的瞬间。'),
+      ],
+    },
+    {
+      id: 'album-08',
+      title: '在这座城的冬天',
+      photos: [
+        albumPhoto(14, '汉江上成群的红嘴鸥与对岸城市建筑', '江面上，鸥影与城市相望。'),
+        albumPhoto(17, '一只飞鸟掠过城市建筑前方', '飞过城市，也飞进冬天的记忆。'),
+      ],
+    },
+    {
+      id: 'album-09',
+      title: '把约定留给晚霞',
+      photos: [
+        albumPhoto(15, '灰色水面上方，一只飞鸟掠过', '从白昼的水面掠过。'),
+        albumPhoto(13, '夕阳映亮汉江，红嘴鸥在金色水面上空飞舞', '把冬天的约定，写进晚霞里。'),
+      ],
+    },
+  ],
   ending: {
     text: '明天，我要好好认识这条美丽的江。',
     nextChapterId: 'chapter-02',
