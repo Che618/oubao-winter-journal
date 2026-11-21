@@ -17,6 +17,7 @@ npm run dev
 npm run build     # 类型检查与正式构建，生成 dist，不会部署
 npm run preview   # 本机预览构建产物
 npm test          # Chrome 中运行浏览器回归测试
+npm run test:pages # 对 dist 在仓库子路径下做浏览器验证，先执行 build
 ```
 
 测试默认使用已安装的 Google Chrome，以独立的无界面进程运行，不使用个人浏览器配置。如果没有 Chrome，可安装 Playwright Chromium 后执行：
@@ -29,7 +30,9 @@ npm test
 
 ## GitHub Actions 构建与 Pages 发布
 
-仓库内的 `.github/workflows/build.yml` 会在推送到 `main`、向 `main` 发起 PR 时构建，也支持手动运行。流程使用 Node.js 24，执行 `npm ci` 与 `npm run build`，将 `dist/` 保存为可下载产物。`main` 的推送或手动运行会在构建成功后发布到 GitHub Pages；PR 仅构建，不发布。
+仓库内的 `.github/workflows/build.yml` 会在推送到 `main`、向 `main` 发起 PR 时构建，也支持手动运行。流程使用 Node.js 24，执行 `npm ci`、`npm run build` 与 `npm run test:pages`，将 `dist/` 保存为可下载产物。构建版测试在 `/oubao-winter-journal/` 子路径实际打开网页、解码背景图片并播放视频，失败则停止发布。`main` 的推送或手动运行通过后发布到 GitHub Pages；PR 不发布。
+
+所有素材地址通过 `asset()` 以 `document.baseURI` 生成绝对URL。不能在CSS变量里直接使用 `./assets/...`：生产CSS位于 `assets/`，浏览器会将这种相对地址解析成 `assets/assets/...`，导致背景404。开发预览不会暴露这个问题，必须验证构建产物。
 
 首次启用：打开仓库 **Settings → Pages → Build and deployment → Source**，选择 **GitHub Actions**。不需要再选择或生成其他模板工作流，本仓库已有完整配置。
 
@@ -127,11 +130,11 @@ npm run assets -- --photos "红嘴鸥第二章/照片" --chapter chapter-02
 - 背景音乐为 Kevin MacLeod 的《Dream Culture》（CC BY 4.0），网页使用 `public/audio/dream-culture-web.mp3`（约2.14 MB、80 kbps），原下载文件保留在本地、不参与发布的 `local-audio-originals`。每次进入默认开启，立即预加载并尝试有声播放；浏览器拦截自动播放时，首次轻触页面或点击音乐按钮即可播放，不依赖翻书。浏览器策略优先，不能保证所有手机无操作自动出声。音量20%、循环播放，本次阅读手动关闭后不会因翻页、视频结束或返回前台而重开；重新进入页面恢复默认开启。目录底部有可见署名、转码说明和授权链接，详细来源见 `public/audio/CREDITS.md`。音轨在全书共享，切章和重新分页不重新开始。
 - 正文按真实 DOM 测量分页，保持17px基础字号；极短屏幕的开篇、目录与回信等特殊页面允许纵向阅读，滚动区域与页脚分离。
 - 文稿正文按提供内容保留，原稿中的“协会协会”等重复字样未擅自修改。网页图注、引导短句及目录副标题为本次设计新增文案，后续需结合编辑意见审阅。
-- 第一章视频与360°全景尚未提供，页面标注待更新；路线仅呈现已知起终点，没有编造途经城市、具体轨迹或距离。
+- 第一章视频已接入：原片为 `红嘴鸥第一章/视频/vidio.mp4`，网页副本为 `public/assets/chapter-01/vlog.mp4`，约68秒、1280×720、H.264/AAC、12.34 MB。放在日记后、稿件前，读者点击播放才加载；播放时暂停BGM，翻离时暂停，返回保留进度。用户已确认含AI画面，网页副本已烧录“本片含AI辅助画面”标识，简介也保留AI提示；原片未改动。生成命令为 `node scripts/prepare-video.mjs --ffmpeg "FFmpeg程序路径"`，脚本同时提取视频封面、启用faststart以支持边下边播。360°全景仍待补充；路线仅呈现已知起终点。
 - 回信按章节保存到当前浏览器的 `localStorage`，支持重新编辑。没有服务器、账号、公开留言墙或后台审核；页面不会提示公开发布成功。
 - 阅读记录也保存在本机。屏幕尺寸变化会重新分页并尽量保留页面 ID；同一页内容可能因重排略有位移。
 - 仅当前页和相邻页加载正文图片；章节内容通过独立模块按需加载。
-- 未进行微信 iOS／Android 真机验证。当前回归测试覆盖 Chrome 的320×568、390×844、1440×1000视口以及尺寸变化；视频与全景的真实兼容验证需在相应资源补齐后进行。
+- 未进行微信 iOS／Android 真机验证。当前回归测试覆盖 Chrome 的320×568、390×844、1440×1000视口、尺寸变化、真实视频解码播放与BGM切换，以及构建版在仓库子路径下的资源加载。
 
 ## 翻页模块维护
 

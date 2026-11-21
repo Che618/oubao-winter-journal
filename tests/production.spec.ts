@@ -56,3 +56,37 @@ for (const viewport of [
     expect(errors).toEqual([]);
   });
 }
+
+test('正式构建中的第一集可解码播放，视频播放时暂停背景音乐', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('response', (response) => {
+    if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
+  });
+  await page.goto('./');
+  await page.locator('.flip-engine[data-ready="true"]').waitFor();
+  await page.getByRole('button', { name: '翻开我们的故事' }).click();
+  await page
+    .getByRole('navigation', { name: '本章阅读目录' })
+    .getByRole('button', { name: '影像日记' })
+    .click();
+  const video = page.locator('.book-page[aria-hidden="false"] video');
+  await expect(video).toHaveAttribute('src', /\/assets\/chapter-01\/vlog.mp4$/);
+  await expect(page.locator('.book-page[aria-hidden="false"] .ai-disclosure')).toContainText('AI');
+  await video.evaluate((element) => (element as HTMLVideoElement).play());
+  await expect
+    .poll(() => video.evaluate((element) => (element as HTMLVideoElement).currentTime))
+    .toBeGreaterThan(0.2);
+  expect(await video.evaluate((element) => (element as HTMLVideoElement).videoWidth)).toBe(1280);
+  expect(await video.evaluate((element) => (element as HTMLVideoElement).duration)).toBeGreaterThan(
+    68,
+  );
+  await expect
+    .poll(() =>
+      page.locator('.background-music').evaluate((element) => (element as HTMLAudioElement).paused),
+    )
+    .toBe(true);
+  await page.screenshot({ path: 'test-results/production-video.png' });
+  await video.evaluate((element) => (element as HTMLVideoElement).pause());
+  expect(errors).toEqual([]);
+});

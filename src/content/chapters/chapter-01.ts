@@ -52,9 +52,10 @@ const chapter: ChapterContent = {
   },
   video: {
     title: '鸥宝的 Vlog',
-    poster: asset('chapter-01/photo-02.webp'),
-    // 收到视频后添加 src: asset('chapter-01/vlog.mp4')；存在AI内容时填写 aiGenerated。
-    caption: '把第一次抵达汉江的心跳，留在这一帧里。',
+    poster: asset('chapter-01/vlog-poster.webp'),
+    src: asset('chapter-01/vlog.mp4'),
+    aiGenerated: true,
+    caption: '第一集：鸥宝来啦！跟着鸥宝一家，看看第一次抵达汉江的旅程。',
   },
   article: {
     title: '西伯利亚的朋友，又来啦！',

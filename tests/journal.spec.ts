@@ -91,10 +91,11 @@ test('按顺序翻开、滑动和返回；目录只开放已上线章节', async
   await page.getByRole('button', { name: '上一页', exact: true }).click();
   await expect(page.locator('.reading-position')).toContainText('认识鸥宝');
   await goTo(page, '影像日记');
-  await expect(page.locator('[aria-hidden="false"] .pending-label')).toHaveText(
-    '影像日记 · 即将更新',
+  await expect(page.locator('[aria-hidden="false"] video')).toHaveAttribute(
+    'src',
+    /chapter-01\/vlog.mp4$/,
   );
-  await expect(page.locator('video')).toHaveCount(0);
+  await expect(page.locator('[aria-hidden="false"] .ai-disclosure')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
