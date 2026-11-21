@@ -10,7 +10,7 @@ export interface BookHandle {
   previous: () => void;
   goTo: (index: number) => void;
 }
-interface Props extends Omit<PageViewProps, 'page' | 'index' | 'total' | 'next'> {
+interface Props extends Omit<PageViewProps, 'page' | 'index' | 'total' | 'next' | 'navigate'> {
   motionEnabled: boolean;
   pages: BookPage[];
   width: number;
@@ -69,6 +69,8 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
     pages.forEach((page, index) => {
       const element = document.createElement('article');
       element.className = `book-page page-${page.kind}`;
+      if (page.kind === 'contents' && live.current.chapter.contentsDesign)
+        element.classList.add('has-contents-design');
       element.dataset.pageId = page.id;
       element.dataset.pageKind = page.kind;
       element.setAttribute('aria-label', page.kind === 'cover' ? '日记本封面' : `第${index}页`);
@@ -131,6 +133,15 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
               index={index}
               total={pages.length}
               next={next}
+              navigate={(section) => {
+                const target = pages.findIndex((item) =>
+                  item.kind === 'flow' ? item.section === section : item.kind === section,
+                );
+                if (target >= 0) {
+                  live.current.onRead();
+                  book.turnToPage(target);
+                }
+              }}
             />,
           );
         }),

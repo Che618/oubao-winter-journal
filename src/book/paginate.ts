@@ -161,11 +161,6 @@ export function buildPages(chapter: ChapterContent, width: number, height: numbe
   return [
     { id: 'cover', kind: 'cover' },
     { id: 'contents', kind: 'contents' },
-    ...(chapter.frontMatter ?? []).map((artwork) => ({
-      id: `${chapter.id}-${artwork.id}`,
-      kind: 'artwork' as const,
-      artwork,
-    })),
     { id: `${chapter.id}-intro`, kind: 'intro' },
     ...paginateFlow(chapter, 'diary', width, height),
     { id: `${chapter.id}-video`, kind: 'video' },
@@ -187,10 +182,6 @@ export function buildPages(chapter: ChapterContent, width: number, height: numbe
       activity,
     })),
     { id: `${chapter.id}-letter`, kind: 'letter' },
-    ...(chapter.closingArtwork ?? []).map((artwork) => ({
-      id: `${chapter.id}-${artwork.id}`,
-      kind: 'artwork' as const,
-      artwork,
-    })),
+    { id: `${chapter.id}-back-cover`, kind: 'backCover' },
   ];
 }

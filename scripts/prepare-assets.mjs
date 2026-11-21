@@ -54,12 +54,33 @@ const jobs = [
   ['红嘴鸥IP设计素材/鸥爸1 zsr.png', 'father.webp', 500],
 ];
 for (const [file, name, width] of jobs) {
-  await sharp(path.join(design, file))
-    .resize({ width, withoutEnlargement: true })
-    .webp({ quality: 86 })
-    .toFile(path.join(output, name));
+  const input = path.join(design, file);
+  if (name.startsWith('notebook-')) {
+    const metadata = await sharp(input).metadata();
+    const scale = metadata.width / 1511;
+    await sharp(input)
+      .extract({
+        left: Math.round(136 * scale),
+        top: Math.round(418 * scale),
+        width: Math.round(1240 * scale),
+        height: Math.round(1835 * scale),
+      })
+      .webp({ lossless: true })
+      .toFile(path.join(output, name));
+  } else {
+    await sharp(input)
+      .resize({ width, withoutEnlargement: true })
+      .webp({ quality: 86 })
+      .toFile(path.join(output, name));
+  }
 }
 const blank = path.join(design, '日记本设计素材', '纯翻开空白页   备选.png');
+// 背景保留完整原图像素；书页单独裁切后，在同一纸张坐标上翻动。
+await sharp(blank).webp({ lossless: true }).toFile(path.join(output, 'notebook-scene.webp'));
+await sharp(blank)
+  .extract({ left: 1490, top: 0, width: 21, height: 2845 })
+  .webp({ lossless: true })
+  .toFile(path.join(output, 'scene-edge.webp'));
 const { width, height } = await sharp(blank).metadata();
 await sharp(blank)
   .extract({ left: 0, top: height - 380, width, height: 380 })
@@ -81,4 +102,4 @@ await writeFile(
   path.join(output, 'chapter-01-sources.json'),
   JSON.stringify(manifest, null, 2) + '\n',
 );
-console.log(`已生成 ${jobs.length + photoCount + 1} 张网页派生素材，原始文件未改动。`);
+console.log(`已生成 ${jobs.length + photoCount + 3} 张网页派生素材，原始文件未改动。`);

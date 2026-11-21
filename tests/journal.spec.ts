@@ -18,18 +18,19 @@ test('动态模式翻页后可读，可暂停并记住偏好，系统减少动�
   await ready(page);
   const toggle = page.getByRole('button', { name: '装饰动效' });
   await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: '翻开我们的故事' }).click();
+  await expect(page.locator('.reading-position')).toContainText('目录');
+  await expect(page.locator('.page-contents')).toHaveAttribute('data-motion-ready', 'true');
+  await goTo(page, '认识鸥宝');
   await expect
     .poll(() =>
       page
-        .locator('.family-portrait img')
+        .locator('.intro-composition > img')
         .evaluate((el) =>
           el.getAnimations().some((animation) => animation.playState === 'running'),
         ),
     )
     .toBe(true);
-  await page.getByRole('button', { name: '翻开我们的故事' }).click();
-  await expect(page.locator('.reading-position')).toContainText('目录');
-  await expect(page.locator('.page-contents')).toHaveAttribute('data-motion-ready', 'true');
   await goTo(page, '日记');
   await expect
     .poll(() =>
@@ -73,11 +74,12 @@ test('按顺序翻开、滑动和返回；目录只开放已上线章节', async
   await ready(page);
   await page.getByRole('button', { name: '翻开我们的故事' }).click();
   await expect(page.locator('.reading-position')).toContainText('目录');
-  await expect(page.locator('.page-contents .toc-row:disabled')).toHaveCount(7);
-  await page.getByRole('button', { name: '下一页', exact: true }).click();
-  await expect(page.locator('.book-page[aria-hidden="false"] h2')).toHaveText('日记扉页');
-  await page.getByRole('button', { name: '下一页', exact: true }).click();
-  await expect(page.locator('.book-page[aria-hidden="false"] h2')).toHaveText('第一章 · 先至');
+  await expect(
+    page.getByRole('navigation', { name: '本章阅读目录' }).getByRole('button'),
+  ).toHaveCount(6);
+  await page.getByRole('button', { name: '打开全书目录' }).click();
+  await expect(page.locator('.drawer-chapter:disabled')).toHaveCount(7);
+  await page.getByRole('button', { name: '关闭目录' }).click();
   await page.getByRole('button', { name: '下一页', exact: true }).click();
   await expect(page.locator('.reading-position')).toContainText('认识鸥宝');
   const box = await page.locator('.book-size').boundingBox();

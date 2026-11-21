@@ -25,7 +25,7 @@ import { useBackgroundMusic } from './book/useBackgroundMusic';
 
 const pageNames: Record<BookPage['kind'], string> = {
   cover: '封面',
-  artwork: '日记装帧',
+  backCover: '合上日记',
   album: '汉江影像',
   contents: '目录',
   intro: '认识鸥宝',
@@ -229,7 +229,12 @@ export default function App() {
       style={
         {
           '--paper-image': `url("${asset('paper.webp')}")`,
-          '--river-image': `url("${asset('river-watercolor.webp')}")`,
+          '--blank-image': `url("${asset('notebook-blank.webp')}")`,
+          '--cover-image': `url("${asset('notebook-title.webp')}")`,
+          '--logo-image': `url("${asset('notebook-logo.webp')}")`,
+          '--scene-image': `url("${asset('notebook-scene.webp')}")`,
+          '--scene-edge': `url("${asset('scene-edge.webp')}")`,
+          '--contents-image': `url("${content?.contentsDesign ?? asset('notebook-blank.webp')}")`,
         } as React.CSSProperties
       }
     >
@@ -241,23 +246,7 @@ export default function App() {
         loop
         aria-hidden="true"
       />
-      <div className="landscape-background" aria-hidden="true">
-        <div className="far-mountain mountain-one" />
-        <div className="far-mountain mountain-two" />
-        <div className="watercolor-river" />
-        <svg className="sky-birds" viewBox="0 0 180 70">
-          <path d="M10 35q12-15 24 0 12-13 24-3" />
-          <path d="M99 15q9-10 18 1 9-11 18-2" />
-          <path d="M133 51q7-9 14 0 7-8 15-2" />
-        </svg>
-        <div className="river-glints">
-          <i />
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
-      </div>
+      <div className="landscape-background" aria-hidden="true" />
       <header className="site-header">
         <a
           className="site-brand"

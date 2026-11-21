@@ -1,0 +1,171 @@
+/* 设计原图的统一坐标：1511×2845，纸面为 (136,418,1240,1835)。
+   原场景保持颜色、纹理与投影，翻书只替换纸面区域。 */
+.landscape-background {
+  background: var(--scene-edge) center / 100% 100% no-repeat;
+}
+.landscape-background:after,
+.book-paper-stack,
+.book-size:before,
+.desktop-margin {
+  display: none;
+}
+.reading-room {
+  position: static;
+  padding: 0;
+}
+.book-stage {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  height: 100svh;
+  width: auto;
+  max-height: none;
+  aspect-ratio: 1511 / 2845;
+  transform: translate(-50%, -50%);
+  background: var(--scene-image) center / 100% 100% no-repeat;
+  display: block;
+}
+.book-size {
+  position: absolute;
+  left: calc(136 / 1511 * 100%);
+  top: calc(418 / 2845 * 100%);
+  width: calc(1240 / 1511 * 100%);
+  height: calc(1835 / 2845 * 100%);
+  max-width: none;
+  max-height: none;
+}
+.site-header,
+.reader-controls {
+  position: relative;
+  z-index: 2;
+}
+.reader-controls .reading-position,
+.reader-controls .reading-position small,
+.reader-controls .nav-arrow {
+  color: #285f57;
+}
+.reader-controls .nav-arrow {
+  border-color: #38796b70;
+  background: #eaf2df44;
+}
+.book-page {
+  background-image: var(--blank-image);
+  background-size: 100% 100%;
+  border: 0;
+  border-radius: 0;
+}
+.book-page:after {
+  display: none;
+}
+.page-flow:has(.diary-flow) {
+  background-image: var(--paper-image);
+}
+.page-cover {
+  background-image: var(--cover-image);
+}
+.page-backCover,
+.loading-page {
+  background-image: var(--logo-image);
+  background-size: 100% 100%;
+}
+.page-contents.has-contents-design {
+  background-image: var(--contents-image);
+}
+.original-cover {
+  height: 100%;
+  padding: 0;
+}
+.original-cover:before,
+.original-cover:after {
+  display: none;
+}
+.original-cover .open-book {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 3%;
+  height: 10%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.original-contents {
+  position: relative;
+  height: 100%;
+  padding: 0 !important;
+  overflow: hidden;
+}
+.chapter-links {
+  position: absolute;
+  left: 14%;
+  right: 10%;
+  top: 56%;
+  bottom: 10%;
+  display: grid;
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+}
+.chapter-links button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px;
+  font-size: clamp(11px, 3vw, 15px);
+  letter-spacing: 2px;
+  text-align: left;
+  color: #6a4d35;
+  border-bottom: 1px dashed #a77d5440;
+}
+.chapter-links button > span {
+  font:
+    italic 10px Georgia,
+    serif;
+  color: #ac8a65;
+}
+.chapter-links button > svg {
+  margin-left: auto;
+}
+.original-back-cover {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 23% !important;
+  text-align: center;
+}
+.original-back-cover h2 {
+  color: #865e40;
+  letter-spacing: 5px;
+  font-size: clamp(22px, 6vw, 32px);
+}
+.original-back-cover p {
+  font-size: 13px;
+  line-height: 2;
+  color: #8e7961;
+  margin-top: 18px;
+}
+.back-cover-restart {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  margin-top: 16px;
+  font-size: 11px;
+  color: #957456;
+}
+.family-companions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 100%;
+  gap: 12px;
+}
+.family-companions img {
+  height: 100px;
+}
+.family-companions figcaption {
+  letter-spacing: 1px;
+  font-size: 10px;
+}
+@media (max-width: 600px) {
+  .book-stage {
+    height: max(100svh, calc(100vw * 2845 / 1511));
+  }
+}

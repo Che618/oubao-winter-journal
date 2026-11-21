@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import sharp from 'sharp';
 
 const manifest: { source: string; asset: string }[] = JSON.parse(
   readFileSync('public/assets/chapter-01-sources.json', 'utf8'),
@@ -24,7 +25,13 @@ test('第一章28张素材全部有网页用途，18张照片完整编入相簿'
       ...Array.from(document.querySelectorAll('img')).map(
         (img) => img.getAttribute('data-src') || img.getAttribute('src') || '',
       ),
-      getComputedStyle(document.querySelector('.app-shell')!).getPropertyValue('--paper-image'),
+      ...[
+        '--paper-image',
+        '--blank-image',
+        '--cover-image',
+        '--logo-image',
+        '--contents-image',
+      ].map((key) => getComputedStyle(document.querySelector('.app-shell')!).getPropertyValue(key)),
     ].join('\n'),
   );
   for (const entry of manifest)
@@ -33,32 +40,69 @@ test('第一章28张素材全部有网页用途，18张照片完整编入相簿'
     .locator('.album-photos img')
     .evaluateAll((images) => images.map((image) => image.getAttribute('data-src')));
   expect(new Set(photos).size).toBe(18);
-  expect(await page.locator('.family-companions img').count()).toBe(2);
+  expect(await page.locator('.family-companions img').count()).toBe(3);
+  expect(await page.locator('.page-artwork').count()).toBe(0);
+});
+
+test('场景背景保留原PNG像素，首页纸面来自指定的2号设计图', async () => {
+  test.skip(!existsSync('红嘴鸥第一章'), 'CI只使用网页派生素材，本地核对原图像素');
+  const original = (asset: string) =>
+    path.join('红嘴鸥第一章', manifest.find((entry) => entry.asset === asset)!.source);
+  const background = await sharp(original('notebook-blank.webp')).ensureAlpha().raw().toBuffer();
+  const derivedBackground = await sharp('public/assets/notebook-scene.webp')
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  expect(background.equals(derivedBackground)).toBe(true);
+  const cover = await sharp(original('notebook-title.webp'))
+    .extract({ left: 136, top: 418, width: 1240, height: 1835 })
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  const derivedCover = await sharp('public/assets/notebook-title.webp')
+    .ensureAlpha()
+    .raw()
+    .toBuffer();
+  expect(cover.equals(derivedCover)).toBe(true);
 });
 
 for (const viewport of [
   { width: 320, height: 568 },
   { width: 390, height: 844 },
 ]) {
-  test(`${viewport.width}px 全部装帧和相簿图片可翻到、正常加载、完整显示且可放大`, async ({
+  test(`${viewport.width}px 首页直接用原封面，本章目录能跳转，18张照片完整显示且可放大`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport);
     await page.goto('/');
     await page.locator('.flip-engine[data-ready="true"]').waitFor();
-    await page.getByRole('button', { name: '打开全书目录' }).click();
+    await page.evaluate(async () => {
+      const styles = getComputedStyle(document.querySelector('.app-shell')!);
+      await Promise.all(
+        ['--scene-image', '--cover-image'].map(async (key) => {
+          const image = new Image();
+          image.src = styles.getPropertyValue(key).trim().slice(5, -2);
+          await image.decode();
+        }),
+      );
+    });
+    await expect(page.locator('.page-cover')).toHaveCSS('background-image', /notebook-title.webp/);
+    await page.screenshot({ path: `test-results/cover-${viewport.width}.png` });
+    await page.getByRole('button', { name: '翻开我们的故事' }).click();
+    await expect(page.locator('.reading-position')).toContainText('目录');
+    await page.screenshot({ path: `test-results/contents-${viewport.width}.png` });
     await page
-      .locator('.section-tabs')
-      .getByRole('button', { name: '日记装帧', exact: true })
+      .getByRole('navigation', { name: '本章阅读目录' })
+      .getByRole('button', { name: '汉江影像' })
       .click();
-    let artwork = 0,
-      spreads = 0;
+    await expect(page.locator('.reading-position')).toContainText('汉江影像');
+    let spreads = 0;
     const total = await page.locator('.book-page').count();
     for (let i = 0; i < total; i++) {
       const current = page.locator('.book-page[aria-hidden="false"]');
       const kind = await current.getAttribute('data-page-kind');
-      if (kind === 'artwork' || kind === 'album') {
-        kind === 'artwork' ? artwork++ : spreads++;
+      if (kind === 'album') {
+        spreads++;
         const images = current.locator('img');
         await expect
           .poll(() =>
@@ -79,13 +123,11 @@ for (const viewport of [
         await page.getByRole('button', { name: '关闭照片' }).click();
         if (kind === 'album' && spreads === 1)
           await page.screenshot({ path: `test-results/album-${viewport.width}.png` });
-        if (kind === 'artwork' && artwork === 1)
-          await page.screenshot({ path: `test-results/artwork-${viewport.width}.png` });
       }
       if (await page.getByRole('button', { name: '下一页', exact: true }).isDisabled()) break;
       await page.getByRole('button', { name: '下一页', exact: true }).click();
     }
-    expect(artwork).toBe(4);
+    await expect(page.locator('.reading-position')).toContainText('合上日记');
     expect(spreads).toBe(9);
   });
 }

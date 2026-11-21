@@ -15,34 +15,7 @@ const albumPhoto = (number: number, alt: string, caption: string) => ({
 
 const chapter: ChapterContent = {
   id: 'chapter-01',
-  frontMatter: [
-    {
-      id: 'title-design',
-      title: '日记扉页',
-      src: asset('notebook-title.webp'),
-      alt: '原设计扉页：水彩汉江中的日记本，一家三口站在山水画前',
-    },
-    {
-      id: 'chapter-design',
-      title: '第一章 · 先至',
-      src: asset('notebook-chapter.webp'),
-      alt: '原设计章节页：米色横线纸、珊瑚色脚印与第一期先至标题',
-    },
-  ],
-  closingArtwork: [
-    {
-      id: 'blank-design',
-      title: '把下一页留给冬天',
-      src: asset('notebook-blank.webp'),
-      alt: '原设计留白页：青绿色水彩江景环绕着空白日记本',
-    },
-    {
-      id: 'logo-design',
-      title: '合上日记，下次再见',
-      src: asset('notebook-logo.webp'),
-      alt: '原设计封套：青绿色江景中的日记本，左下角是一家三口和标识',
-    },
-  ],
+  contentsDesign: asset('notebook-chapter.webp'),
   opening: {
     greeting: '你好呀，我是',
     title: '鸥宝！',
@@ -50,6 +23,7 @@ const chapter: ChapterContent = {
     illustrationAlt: '鸥宝展开翅膀向你打招呼',
     annotation: '4个月的我\n第一次远行',
     companions: [
+      { name: '我们一家', src: asset('family.webp'), alt: '鸥宝与戴相机的爸爸、围粉色围巾的妈妈' },
       { name: '妈妈', src: asset('mother.webp'), alt: '围着粉色围巾、穿着粉色衣服的鸥妈妈' },
       { name: '爸爸', src: asset('father.webp'), alt: '戴墨镜、系领带、挎着相机的鸥爸爸' },
     ],

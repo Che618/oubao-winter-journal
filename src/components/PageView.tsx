@@ -34,6 +34,7 @@ export interface PageViewProps {
   selectChapter: (id: string) => void;
   notify: (text: string) => void;
   openImage: (src: string, alt: string) => void;
+  navigate: (section: 'diary' | 'video' | 'article' | 'album' | 'journey' | 'letter') => void;
 }
 
 function LazyImage({ src, alt, className = '' }: { src: string; alt: string; className?: string }) {
@@ -246,50 +247,45 @@ export function PageView(props: PageViewProps) {
   switch (page.kind) {
     case 'cover':
       content = (
-        <div className="page-inner cover-inner">
-          <div className="cover-edition">
-            <span>汉中 · 冬日来信</span>
-            <span>2026 WINTER</span>
-          </div>
-          <div className="cover-topline">
-            <span />
-            一江温暖，一冬相伴
-            <span />
-          </div>
-          <h1>
-            鸥宝<span>越冬志</span>
-          </h1>
-          <div className="cover-english">A LITTLE GULL’S WINTER JOURNAL</div>
-          <div className="family-portrait">
-            <div className="portrait-wash" />
-            <img
-              src={asset('family.webp')}
-              alt="穿着背带裤的鸥宝，和戴相机的爸爸、围粉色围巾的妈妈"
-              fetchPriority="high"
-            />
-          </div>
-          <p className="cover-poem">
-            从遥远的西伯利亚，
-            <br />
-            飞进汉江的冬天，也飞进你的心里。
-          </p>
-          <button className="open-book" onClick={next}>
-            翻开我们的故事
-            <ArrowRight size={17} />
+        <div className="page-inner cover-inner original-cover">
+          <h1 className="sr-only">鸥宝越冬志</h1>
+          <button className="open-book" onClick={next} aria-label="翻开我们的故事">
+            <span className="sr-only">翻开我们的故事</span>
           </button>
-          <div className="cover-bottom">
-            <span className="brand-stamp">
-              汉中
-              <br />
-              融媒
-            </span>
-            <span>八期连载 · 一场山水间的约定</span>
-            <img src={asset('footprint.webp')} alt="" />
-          </div>
         </div>
       );
       break;
     case 'contents':
+      if (chapter.contentsDesign) {
+        const links = [
+          { section: 'diary', title: '鸥宝的日记' },
+          { section: 'video', title: '影像日记' },
+          { section: 'article', title: '江边剪报' },
+          ...(chapter.album?.length ? [{ section: 'album', title: '汉江影像' }] : []),
+          ...(chapter.journey ? [{ section: 'journey', title: '来时的路' }] : []),
+          { section: 'letter', title: '给鸥宝回信' },
+        ] as const;
+        content = (
+          <div className="page-inner original-contents">
+            <h2 className="sr-only">第一章 · {summary.title} · 目录</h2>
+            <nav className="chapter-links" aria-label="本章阅读目录">
+              {links.map((link, i) => (
+                <button
+                  key={link.section}
+                  onClick={() =>
+                    props.navigate(link.section as Parameters<PageViewProps['navigate']>[0])
+                  }
+                >
+                  <span>{String(i + 1).padStart(2, '0')}</span>
+                  {link.title}
+                  <ArrowRight size={12} />
+                </button>
+              ))}
+            </nav>
+          </div>
+        );
+        break;
+      }
       content = (
         <div className="page-inner contents-inner">
           <div className="eyebrow">CONTENTS · 越冬手记</div>
@@ -534,19 +530,18 @@ export function PageView(props: PageViewProps) {
         </div>
       );
       break;
-    case 'artwork':
+    case 'backCover':
       content = (
-        <div className="page-inner artwork-inner">
-          <div className="eyebrow">鸥宝的日记本</div>
-          <h2>{page.artwork.title}</h2>
-          <button
-            className="photo-button artwork-image"
-            aria-label={`放大${page.artwork.title}`}
-            onClick={() => openImage(page.artwork.src, page.artwork.alt)}
-          >
-            <LazyImage src={page.artwork.src} alt={page.artwork.alt} />
+        <div className="page-inner original-back-cover">
+          <h2>未完，待续</h2>
+          <p>
+            把相逢写进日记，
+            <br />
+            下一次，再一起翻开。
+          </p>
+          <button className="back-cover-restart" onClick={() => selectChapter(chapter.id)}>
+            从这一章重新读起 <ArrowRight size={14} />
           </button>
-          <p className="artwork-note">轻触画面，展开看看</p>
         </div>
       );
       break;
@@ -569,7 +564,7 @@ export function PageView(props: PageViewProps) {
               </figure>
             ))}
           </div>
-          <p className="artwork-note">轻触照片，收藏一江冬色</p>
+          <p className="album-note">轻触照片，收藏一江冬色</p>
         </div>
       );
       break;
@@ -583,8 +578,8 @@ export function PageView(props: PageViewProps) {
   return (
     <>
       {content}
-      {page.kind !== 'cover' && page.kind !== 'flow' && <ScrollHint />}
-      {page.kind !== 'cover' && (
+      {page.kind !== 'cover' && page.kind !== 'flow' && page.kind !== 'backCover' && <ScrollHint />}
+      {page.kind !== 'cover' && page.kind !== 'backCover' && (
         <div className="page-footer">
           <span>鸥宝越冬志 · {summary.title}</span>
           <span>

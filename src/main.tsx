@@ -4,5 +4,6 @@ import './styles.css';
 import './motion.css';
 import './music.css';
 import './album.css';
+import './design.css';
 
 createRoot(document.getElementById('root')!).render(<App />);
