@@ -87,4 +87,6 @@ export type BookPage =
   | { id: string; kind: 'activity'; activity: ActivityConfig }
   | FlowPage;
 
-export const asset = (path: string) => `${import.meta.env.BASE_URL}assets/${path}`;
+// CSS变量中的相对URL会以构建后的CSS目录为基准；统一输出以页面为基准的绝对URL。
+export const asset = (path: string) =>
+  new URL(`${import.meta.env.BASE_URL}assets/${path}`, document.baseURI).href;

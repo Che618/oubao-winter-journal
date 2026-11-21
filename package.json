@@ -10,6 +10,7 @@
     "assets": "node scripts/prepare-assets.mjs",
     "vendor": "node scripts/prepare-page-flip.mjs",
     "test": "playwright test",
+    "test:pages": "playwright test --config playwright.pages.config.ts",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.ts\" \"scripts/*.mjs\" \"*.{ts,json}\""
   },
   "dependencies": {
