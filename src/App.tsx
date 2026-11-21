@@ -11,6 +11,8 @@ import {
   RotateCcw,
   Sparkles,
   Pause,
+  Music2,
+  VolumeX,
   X,
 } from 'lucide-react';
 import { chapters, getChapter, loadChapter } from './content/chapters';
@@ -19,6 +21,7 @@ import { buildPages } from './book/paginate';
 import { readSaved, saveLocal, type ReadingPosition } from './book/storage';
 import { FlipBook, type BookHandle } from './book/FlipBook';
 import { useMotionSettings } from './book/useMotionSettings';
+import { useBackgroundMusic } from './book/useBackgroundMusic';
 
 const pageNames: Record<BookPage['kind'], string> = {
   cover: '封面',
@@ -62,6 +65,7 @@ export default function App() {
     toastTimer.current = setTimeout(() => setToast(''), 3200);
   }, []);
   useEffect(() => () => clearTimeout(toastTimer.current), []);
+  const music = useBackgroundMusic(notify);
 
   useEffect(() => {
     let cancelled = false;
@@ -145,6 +149,7 @@ export default function App() {
         return;
       }
       setMenu(false);
+      music.startReading();
       if (id === chapterId) {
         const first = pages.findIndex((page) => page.kind === 'intro');
         book.current?.goTo(Math.max(0, first));
@@ -154,7 +159,7 @@ export default function App() {
         setChapterId(id);
       }
     },
-    [chapterId, pages, notify],
+    [chapterId, pages, notify, music.startReading],
   );
 
   function continueReading() {
@@ -226,6 +231,14 @@ export default function App() {
         } as React.CSSProperties
       }
     >
+      <audio
+        ref={music.audioRef}
+        className="background-music"
+        src={`${import.meta.env.BASE_URL}audio/dream-culture.mp3`}
+        preload="none"
+        loop
+        aria-hidden="true"
+      />
       <div className="landscape-background" aria-hidden="true">
         <div className="far-mountain mountain-one" />
         <div className="far-mountain mountain-two" />
@@ -258,6 +271,29 @@ export default function App() {
           <small>汉中 · 冬日手记</small>
         </a>
         <div className="header-actions">
+          <button
+            className={`music-toggle ${music.playing ? 'is-playing' : ''}`}
+            aria-label="背景音乐"
+            aria-pressed={music.enabled}
+            title={music.blocked ? '重试播放音乐' : music.enabled ? '关闭背景音乐' : '播放背景音乐'}
+            onClick={music.toggle}
+          >
+            {music.enabled ? <Music2 size={16} /> : <VolumeX size={16} />}
+            <span>
+              {music.blocked
+                ? '重试音乐'
+                : music.playing
+                  ? '音乐开'
+                  : music.enabled
+                    ? '音乐待播'
+                    : '音乐关'}
+            </span>
+            <i className="music-bars" aria-hidden="true">
+              <b />
+              <b />
+              <b />
+            </i>
+          </button>
           <button
             className="motion-toggle"
             aria-label="装饰动效"
@@ -301,6 +337,7 @@ export default function App() {
                 height={size.height}
                 startPage={index}
                 onFlip={onFlip}
+                onRead={music.startReading}
                 selectChapter={selectChapter}
                 notify={notify}
                 openImage={(src, alt) => setImage({ src, alt })}
@@ -454,6 +491,27 @@ export default function App() {
             <RotateCcw size={14} />
             从封面重新读起
           </button>
+          <div className="music-credit">
+            <span className="eyebrow">音乐 · 冬日伴奏</span>
+            <p>“Dream Culture” — Kevin MacLeod</p>
+            <p>
+              <a
+                href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300046"
+                target="_blank"
+                rel="noreferrer"
+              >
+                incompetech.com
+              </a>
+              <span> · </span>
+              <a
+                href="https://creativecommons.org/licenses/by/4.0/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                CC BY 4.0
+              </a>
+            </p>
+          </div>
         </div>
       </dialog>
       <dialog

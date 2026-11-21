@@ -17,6 +17,7 @@ interface Props extends Omit<PageViewProps, 'page' | 'index' | 'total' | 'next'>
   height: number;
   startPage: number;
   onFlip: (index: number) => void;
+  onRead: () => void;
 }
 
 /** 翻书库独占 host 内的 DOM，React 页面挂在独立根上，避免重排时互相移动节点。 */
@@ -30,19 +31,28 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
   const next = () => {
     const book = engine.current;
     if (!book || book.getState() !== 'read') return;
-    if (book.getCurrentPageIndex() < live.current.pages.length - 1) book.flipNext('bottom');
+    if (book.getCurrentPageIndex() < live.current.pages.length - 1) {
+      live.current.onRead();
+      book.flipNext('bottom');
+    }
   };
   const previous = () => {
     const book = engine.current;
     if (!book || book.getState() !== 'read') return;
-    if (book.getCurrentPageIndex() > 0) book.flipPrev('bottom');
+    if (book.getCurrentPageIndex() > 0) {
+      live.current.onRead();
+      book.flipPrev('bottom');
+    }
   };
   useImperativeHandle(ref, () => ({
     next,
     previous,
     goTo: (index) => {
       const book = engine.current;
-      if (book && index >= 0 && index < live.current.pages.length) book.turnToPage(index);
+      if (book && index >= 0 && index < live.current.pages.length) {
+        if (index > 0) live.current.onRead();
+        book.turnToPage(index);
+      }
     },
   }));
 
@@ -147,7 +157,10 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
       const folding = pos.x > width - 65 && pos.y > height - 100;
       pointer = { x: e.clientX, y: e.clientY, time: Date.now(), folding };
       container.setPointerCapture(e.pointerId);
-      if (folding) book.startUserTouch(pos);
+      if (folding) {
+        live.current.onRead();
+        book.startUserTouch(pos);
+      }
     };
     const move = (e: PointerEvent) => {
       if (pointer?.folding) book.userMove(point(e), true);
@@ -183,6 +196,7 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
         else container.remove();
       }, 0);
       container.style.display = 'none';
+      nodes.forEach((node) => node.querySelectorAll('video').forEach((video) => video.pause()));
     };
   }, [props.pages, props.width, props.height, reducedMotion]);
 

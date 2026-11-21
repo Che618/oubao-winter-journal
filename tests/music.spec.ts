@@ -1,0 +1,104 @@
+import { test, expect, type Page } from '@playwright/test';
+
+async function openBook(page: Page) {
+  await page.goto('/');
+  await page.locator('.flip-engine[data-ready="true"]').waitFor();
+}
+const paused = (page: Page) =>
+  page.locator('.background-music').evaluate((el) => (el as HTMLAudioElement).paused);
+
+test('开书后播放真实音频，暂停选择持久保存，署名可见且手机按钮不溢出', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().endsWith('.mp3')) requests.push(request.url());
+  });
+  await page.setViewportSize({ width: 320, height: 568 });
+  await openBook(page);
+  expect(requests).toHaveLength(0);
+  expect(await paused(page)).toBe(true);
+  await page.getByRole('button', { name: '翻开我们的故事' }).click();
+  await expect.poll(() => paused(page)).toBe(false);
+  await expect
+    .poll(() =>
+      page.locator('.background-music').evaluate((el) => (el as HTMLAudioElement).currentTime),
+    )
+    .toBeGreaterThan(0);
+  expect(
+    await page
+      .locator('.background-music')
+      .evaluate((el) => ({
+        volume: (el as HTMLAudioElement).volume,
+        loop: (el as HTMLAudioElement).loop,
+      })),
+  ).toEqual({ volume: 0.2, loop: true });
+  await page.getByRole('button', { name: '背景音乐' }).click();
+  await expect.poll(() => paused(page)).toBe(true);
+  await page.getByRole('button', { name: '下一页', exact: true }).click();
+  expect(await paused(page)).toBe(true);
+  await page.reload();
+  await page.locator('.flip-engine[data-ready="true"]').waitFor();
+  await expect(page.getByRole('button', { name: '背景音乐' })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+  await page.getByRole('button', { name: '翻开我们的故事' }).click();
+  expect(await paused(page)).toBe(true);
+  await page.getByRole('button', { name: '背景音乐' }).click();
+  await expect.poll(() => paused(page)).toBe(false);
+  await page.getByRole('button', { name: '打开全书目录' }).click();
+  await expect(page.locator('.music-credit')).toContainText('Kevin MacLeod');
+  await expect(
+    page.locator('.music-credit').getByRole('link', { name: 'CC BY 4.0' }),
+  ).toHaveAttribute('href', 'https://creativecommons.org/licenses/by/4.0/');
+  await page.getByRole('button', { name: '关闭目录' }).click();
+  const fits = await page.evaluate(() => {
+    const brand = document.querySelector('.site-brand')!.getBoundingClientRect();
+    const actions = document.querySelector('.header-actions')!.getBoundingClientRect();
+    return (
+      brand.right < actions.left &&
+      actions.right <= innerWidth &&
+      document.documentElement.scrollWidth <= innerWidth
+    );
+  });
+  expect(fits).toBe(true);
+});
+
+test('真实媒体播放时暂停BGM，视频暂停后恢复，关闭音乐后不误恢复', async ({ page }) => {
+  await openBook(page);
+  await page.getByRole('button', { name: '翻开我们的故事' }).click();
+  await expect.poll(() => paused(page)).toBe(false);
+  // 用本地MP3作为video的可解码媒体源，验证真实play/pause事件，而非伪造播放状态。
+  await page.evaluate(async () => {
+    const video = document.createElement('video');
+    video.id = 'test-video';
+    video.src = new URL('audio/dream-culture.mp3', location.href).href;
+    video.muted = true;
+    document.querySelector('.book-page[aria-hidden="false"] .page-inner')!.append(video);
+    await video.play();
+  });
+  await expect.poll(() => paused(page)).toBe(true);
+  await page.locator('#test-video').evaluate((el) => (el as HTMLVideoElement).pause());
+  await expect.poll(() => paused(page)).toBe(false);
+  await page.locator('#test-video').evaluate((el) => (el as HTMLVideoElement).play());
+  await expect.poll(() => paused(page)).toBe(true);
+  await page.getByRole('button', { name: '背景音乐' }).click();
+  await page.locator('#test-video').evaluate((el) => (el as HTMLVideoElement).pause());
+  expect(await paused(page)).toBe(true);
+  await expect(page.getByRole('button', { name: '背景音乐' })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+});
+
+test('音频加载失败可重试，不影响翻书', async ({ page }) => {
+  await page.route('**/audio/dream-culture.mp3', (route) => route.abort());
+  await openBook(page);
+  await page.getByRole('button', { name: '翻开我们的故事' }).click();
+  const toggle = page.getByRole('button', { name: '背景音乐' });
+  await expect(toggle).toContainText('重试音乐');
+  await expect(page.locator('.reading-position')).toContainText('目录');
+  await page.unroute('**/audio/dream-culture.mp3');
+  await toggle.click();
+  await expect.poll(() => paused(page)).toBe(false);
+  await expect(toggle).toContainText('音乐开');
+});
