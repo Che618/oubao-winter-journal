@@ -74,6 +74,9 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
       element.dataset.pageId = page.id;
       element.dataset.pageKind = page.kind;
       element.setAttribute('aria-label', page.kind === 'cover' ? '日记本封面' : `第${index}页`);
+      element.inert = true;
+      element.setAttribute('aria-hidden', 'true');
+      element.dataset.motionReady = 'false';
       if (page.kind === 'cover') element.dataset.density = 'hard';
       container.append(element);
       nodes.push(element);
@@ -88,8 +91,13 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
       autoSize: false,
       showCover: false,
       startPage,
-      drawShadow: true,
-      maxShadowOpacity: 0.24,
+      // 实时阴影需要每帧重绘整张书页。触控设备的绘制预算更小，关闭后翻页更顺滑；
+      // 桌面端保留阴影，维持原有的纸张层次感。
+      drawShadow:
+        !reducedMotion &&
+        !window.matchMedia('(pointer: coarse)').matches &&
+        (navigator.hardwareConcurrency ?? 8) > 4,
+      maxShadowOpacity: 0.2,
       flippingTime: reducedMotion ? 1 : 720,
       // 手势由下面统一处理，视频、地图、输入框不交给库拦截。
       useMouseEvents: false,
@@ -98,28 +106,46 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
     });
     let disposed = false;
     let initialized = false;
+    let activeIndex = -1;
+    let motionReadyIndex = -1;
+    const preloadImages = (index: number) => {
+      for (const neighbor of [index - 1, index, index + 1]) {
+        const node = nodes[neighbor];
+        if (!node) continue;
+        node.querySelectorAll<HTMLImageElement>('img[data-src]').forEach((img) => {
+          if (!img.src) img.src = img.dataset.src!;
+        });
+      }
+    };
+    const setMotionReady = (index: number, ready: boolean) => {
+      if (!nodes[index]) return;
+      if (motionReadyIndex >= 0 && motionReadyIndex !== index)
+        nodes[motionReadyIndex].dataset.motionReady = 'false';
+      nodes[index].dataset.motionReady = String(ready);
+      motionReadyIndex = ready ? index : -1;
+    };
     function reveal(index: number) {
-      nodes.forEach((node, i) => {
-        const active = i === index;
-        node.inert = !active;
-        node.setAttribute('aria-hidden', String(!active));
-        // 翻页期间保持内容稳定，翻页结束后才触发装饰与入场效果。
-        node.dataset.motionReady = String(active && book.getState() === 'read');
-        if (Math.abs(i - index) <= 1)
-          node.querySelectorAll<HTMLImageElement>('img[data-src]').forEach((img) => {
-            if (!img.src) img.src = img.dataset.src!;
-          });
-        if (!active) node.querySelectorAll('video').forEach((video) => video.pause());
-      });
+      if (!nodes[index]) return;
+      // 翻页完成时只更新前后两张页面；此前遍历整本书会在每次翻页触发一轮无谓的
+      // inert、无障碍树和图片查询更新。
+      if (activeIndex >= 0 && activeIndex !== index) {
+        const previous = nodes[activeIndex];
+        previous.inert = true;
+        previous.setAttribute('aria-hidden', 'true');
+        previous.querySelectorAll('video').forEach((video) => video.pause());
+      }
+      const active = nodes[index];
+      active.inert = false;
+      active.setAttribute('aria-hidden', 'false');
+      setMotionReady(index, book.getState() === 'read');
+      preloadImages(index);
+      activeIndex = index;
       live.current.onFlip(index);
     }
     book.on('flip', (event) => reveal(Number(event.data)));
     book.on('changeState', (event) => {
-      nodes.forEach((node, i) => {
-        node.dataset.motionReady = String(
-          event.data === 'read' && i === book.getCurrentPageIndex(),
-        );
-      });
+      const index = book.getCurrentPageIndex();
+      setMotionReady(index, event.data === 'read');
     });
     // 在父树生命周期外一次提交所有独立页面，再启动翻页，避免封面已可操作而正文尚未就绪。
     queueMicrotask(() => {
