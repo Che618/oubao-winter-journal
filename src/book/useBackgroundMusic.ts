@@ -106,7 +106,7 @@ export function useBackgroundMusic(notify: (text: string) => void) {
     document.addEventListener('click', onGesture, true);
     document.addEventListener('keydown', onGesture, true);
     audio.volume = 0.2;
-    // preload提前加载；play在允许自动播放的浏览器中直接开始。
+    // 仍立即尝试播放，以保持浏览器原生的自动播放判定；完整音频由播放请求触发下载。
     sync();
     return () => {
       attempt.current++;

@@ -121,7 +121,6 @@ export default function App() {
       document.fonts.load('30px "Ma Shan Zheng"', '鸥宝日记'),
     ])
       .catch(() => [])
-      .then(() => document.fonts.ready)
       .then(() => {
         if (cancelled) return;
         try {
@@ -257,7 +256,8 @@ export default function App() {
         ref={music.audioRef}
         className="background-music"
         src={`${import.meta.env.BASE_URL}audio/dream-culture-web.mp3`}
-        preload="auto"
+        // 只预取元数据；完整音频等播放时再下载，避免 2MB 音频拖住首屏。
+        preload="metadata"
         loop
         aria-hidden="true"
       />
