@@ -114,6 +114,11 @@ function paginateFlow(
 
   try {
     newPage();
+    if (diary) {
+      // 日记作为一张可纵向滚动的完整页面，不按书页高度拆分。
+      for (const block of blocks) commit(block);
+      return pages;
+    }
     for (const block of blocks) {
       if (fits(nodeFor(block))) {
         commit(block);

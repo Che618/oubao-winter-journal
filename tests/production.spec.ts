@@ -51,6 +51,13 @@ for (const viewport of [
     await expect(page.locator('.book-page[aria-hidden="false"] .diary-wordmark')).toHaveText(
       '鸥宝日记',
     );
+    const diary = page.locator('.book-page[aria-hidden="false"] .diary-flow');
+    await expect(diary.locator('[data-source-paragraph]')).toHaveCount(8);
+    const diaryStart = await diary.evaluate((element) => element.scrollTop);
+    await diary.evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
+    expect(await diary.evaluate((element) => element.scrollTop)).toBeGreaterThan(diaryStart);
+    await expect(diary.locator('[data-source-paragraph]').last()).toBeVisible();
+    await diary.evaluate((element) => element.scrollTo({ top: 0 }));
     expect(
       await page.evaluate(
         () =>
@@ -89,6 +96,13 @@ test('正式构建中的第一集可解码播放，视频播放时暂停背景�
     .click();
   const video = page.locator('.book-page[aria-hidden="false"] video');
   await expect(video).toHaveAttribute('src', /\/assets\/chapter-01\/vlog.mp4$/);
+  await expect(video).toHaveAttribute('poster', /\/assets\/chapter-01\/vlog-poster.webp$/);
+  const poster = await video.evaluate((element) => {
+    const image = new Image();
+    image.src = (element as HTMLVideoElement).poster;
+    return image.decode().then(() => ({ width: image.naturalWidth, height: image.naturalHeight }));
+  });
+  expect(poster).toEqual({ width: 960, height: 540 });
   await expect(page.locator('.book-page[aria-hidden="false"] .ai-disclosure')).toContainText('AI');
   await video.evaluate((element) => (element as HTMLVideoElement).play());
   await expect

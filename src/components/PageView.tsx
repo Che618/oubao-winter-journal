@@ -585,7 +585,9 @@ export function PageView(props: PageViewProps) {
   return (
     <>
       {content}
-      {page.kind !== 'cover' && page.kind !== 'flow' && page.kind !== 'backCover' && <ScrollHint />}
+      {page.kind !== 'cover' &&
+        page.kind !== 'backCover' &&
+        (page.kind !== 'flow' || page.section === 'diary') && <ScrollHint />}
       {page.kind !== 'cover' && page.kind !== 'backCover' && (
         <div className="page-footer">
           <span>鸥宝越冬志 · {summary.title}</span>

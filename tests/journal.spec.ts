@@ -143,28 +143,54 @@ for (const viewport of [
     });
     expect(report.articleMatches).toBe(true);
     expect(report.diaryMatches).toBe(true);
+    expect(await page.locator('.book-page[data-page-kind="flow"] .diary-flow').count()).toBe(1);
     expect(report.clipped).toBe(0);
     expect(report.width).toBeLessThanOrEqual(viewport.width);
     // 逐页检查真正显示的正文，防止隐藏页的零尺寸掩盖溢出。
     await goTo(page, '日记');
-    const total = await page.locator('.book-page').count();
-    for (let i = 0; i < total; i++) {
-      const overflow = await page
-        .locator('.book-page[aria-hidden="false"] .flow-inner')
-        .evaluateAll((inners) =>
-          inners.map((inner) => {
-            const last = inner.querySelector('.prose')?.lastElementChild;
-            return last
-              ? last.getBoundingClientRect().bottom -
-                  (inner.getBoundingClientRect().bottom -
-                    parseFloat(getComputedStyle(inner).paddingBottom))
-              : 0;
-          }),
-        );
-      expect(
-        overflow.every((value) => value <= 1),
-        `正文超页 ${overflow}`,
-      ).toBe(true);
+    const diaryPage = page.locator('.book-page[aria-hidden="false"] .diary-flow');
+    await expect(diaryPage.locator('[data-source-paragraph]')).toHaveCount(
+      await page.evaluate(async () => {
+        const { default: chapter } = await import('/src/content/chapters/chapter-01.ts' as string);
+        return chapter.diary.paragraphs.length + 1;
+      }),
+    );
+    const footerBeforeScroll = await page
+      .locator('.book-page[aria-hidden="false"] .page-footer')
+      .boundingBox();
+    const scrollBefore = await diaryPage.evaluate((element) => element.scrollTop);
+    const diaryBox = await diaryPage.boundingBox();
+    await page.mouse.move(diaryBox!.x + diaryBox!.width / 2, diaryBox!.y + diaryBox!.height / 2);
+    await page.mouse.wheel(0, 480);
+    await expect
+      .poll(() => diaryPage.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(scrollBefore);
+    await diaryPage.evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
+    expect(await diaryPage.evaluate((element) => element.scrollTop)).toBeGreaterThan(scrollBefore);
+    await expect(diaryPage.locator('[data-source-paragraph]').last()).toBeVisible();
+    const footerAfterScroll = await page
+      .locator('.book-page[aria-hidden="false"] .page-footer')
+      .boundingBox();
+    expect(footerAfterScroll!.y).toBeCloseTo(footerBeforeScroll!.y, 0);
+    await diaryPage.evaluate((element) => element.scrollTo({ top: 0 }));
+    await goTo(page, '江边剪报');
+    const articlePages = await page.locator('.book-page').count();
+    for (let i = 0; i < articlePages; i++) {
+      const currentPage = page.locator('.book-page[aria-hidden="false"]');
+      if (
+        (await currentPage.getAttribute('data-page-kind')) !== 'flow' ||
+        !(await currentPage.getAttribute('data-page-id'))?.includes('-article-')
+      )
+        break;
+      const overflow = await currentPage.locator('.article-flow').evaluate((inner) => {
+        const last = inner.querySelector('.prose')?.lastElementChild;
+        return last
+          ? last.getBoundingClientRect().bottom -
+              (inner.getBoundingClientRect().bottom -
+                parseFloat(getComputedStyle(inner).paddingBottom))
+          : 0;
+      });
+      expect(overflow, `图文稿件正文超页 ${overflow}`).toBeLessThanOrEqual(1);
       if (await page.getByRole('button', { name: '下一页', exact: true }).isDisabled()) break;
       await page.getByRole('button', { name: '下一页', exact: true }).click();
     }

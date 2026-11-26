@@ -10,6 +10,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const { values } = parseArgs({ options: { ffmpeg: { type: 'string', default: 'ffmpeg' } } });
 const run = promisify(execFile);
 const source = path.join(root, '红嘴鸥第一章/视频/vidio.mp4');
+const posterSource = path.join(root, '红嘴鸥第一章/视频/封面.jpg');
 const target = path.join(root, 'public/assets/chapter-01');
 await mkdir(target, { recursive: true });
 const temporary = await mkdtemp(path.join(os.tmpdir(), 'oubao-video-'));
@@ -67,26 +68,17 @@ try {
     '+faststart',
     video,
   ]);
-  const poster = path.join(temporary, 'poster.png');
-  await run(values.ffmpeg, [
-    '-hide_banner',
-    '-loglevel',
-    'error',
-    '-y',
-    '-ss',
-    '1',
-    '-i',
-    video,
-    '-frames:v',
-    '1',
-    poster,
-  ]);
-  await sharp(poster)
+  await sharp(posterSource)
+    .rotate()
     .resize({ width: 960 })
-    .webp({ quality: 88 })
+    .webp({ quality: 90 })
     .toFile(path.join(target, 'vlog-poster.webp'));
-  await unlink(poster);
-  console.log(`网页视频已生成：${(await stat(video)).size} 字节，原片未改动。`);
+  const image = await sharp(path.join(target, 'vlog-poster.webp')).metadata();
+  if (image.width !== 960 || image.height !== 540)
+    throw new Error('视频封面应由 16:9 的封面.jpg 生成。');
+  console.log(
+    `网页视频已生成：${(await stat(video)).size} 字节；封面来自视频/封面.jpg；原片与原封面均未改动。`,
+  );
 } finally {
   await unlink(label).catch(() => {});
   await rmdir(temporary).catch(() => {});
