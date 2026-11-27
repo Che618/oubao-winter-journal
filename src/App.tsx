@@ -116,6 +116,7 @@ export default function App() {
           content.diary.signature,
           ...content.diary.paragraphs,
           ...content.opening.paragraphs,
+          ...content.article.blocks.map((block) => (block.type === 'photo' ? '' : block.text)),
         ].join(''),
       ),
       document.fonts.load('30px "Ma Shan Zheng"', '鸥宝日记'),

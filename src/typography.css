@@ -6,9 +6,21 @@
   src: url('./fonts/diary-kai.woff2') format('woff2');
 }
 .diary-flow,
+.article-flow .prose,
 .intro-copy {
   font-family: 'Journal Kai', 'KaiTi', 'STKaiti', serif;
   font-weight: 400;
+}
+.article-flow .prose {
+  font-size: 16px;
+  line-height: 1.7;
+  letter-spacing: 0;
+}
+.article-flow .prose p {
+  margin-bottom: 10px;
+}
+.article-flow .prose p:last-child {
+  margin-bottom: 0;
 }
 .diary-flow {
   overflow-y: auto;
