@@ -96,13 +96,76 @@ const chapter: ChapterContent = {
   },
   journey: {
     title: '原来，我飞了这么远',
-    description: '从遥远的西伯利亚，到冬日的汉江。跟着我的脚印，看看这次旅程的起点与终点。',
-    // 仅展示已知起终点；没有资料支持的途经城市和距离不虚构。
+    description: '拖动海鸥与地标，沿着手绘地图看看我来时的路。',
+    // 下方分层地图使用用户提供的路线与日期；起终点用于通用回退页。
     stops: [
       { label: '西伯利亚', note: '出发的地方' },
       { label: '汉中 · 汉江', note: '冬天温暖的落脚地' },
     ],
     aerial: { src: asset('chapter-01/photo-06.webp'), alt: '从空中俯瞰汉江与沿岸观鸥的人群' },
+    map: {
+      base: asset('chapter-01/migration/map.webp'),
+      paper: asset('chapter-01/migration/paper.webp'),
+      route: asset('chapter-01/migration/route.webp'),
+      cursor: asset('chapter-01/migration/gull.webp'),
+      mascot: asset('chapter-01/migration/oubao-flying.webp'),
+      stops: [
+        {
+          id: 'siberia',
+          label: '西伯利亚',
+          note: '9月中旬启程',
+          x: 1205,
+          y: 863,
+          marker: asset('chapter-01/migration/point-siberia.webp'),
+          markerWidth: 84,
+        },
+        {
+          id: 'inner-mongolia',
+          label: '内蒙古自治区',
+          note: '途经站点',
+          x: 1361,
+          y: 2045,
+          marker: asset('chapter-01/migration/point-inner-mongolia.webp'),
+          markerWidth: 45,
+        },
+        {
+          id: 'shahu',
+          label: '宁夏沙湖',
+          note: '9月下旬—10月上旬',
+          x: 1295,
+          y: 2160,
+          marker: asset('chapter-01/migration/point-shahu.webp'),
+          markerWidth: 45,
+        },
+        {
+          id: 'yanan',
+          label: '延安·延河',
+          note: '10月上旬—中旬',
+          x: 1336,
+          y: 2384,
+          marker: asset('chapter-01/migration/point-yanan.webp'),
+          markerWidth: 45,
+        },
+        {
+          id: 'xian',
+          label: '西安',
+          note: '10月中旬',
+          x: 1164,
+          y: 2553,
+          marker: asset('chapter-01/migration/point-xian.webp'),
+          markerWidth: 45,
+        },
+        {
+          id: 'hanzhong',
+          label: '汉中·汉江',
+          note: '10月下旬抵达',
+          x: 1016,
+          y: 2838,
+          marker: asset('chapter-01/migration/point-hanzhong.webp'),
+          markerWidth: 84,
+        },
+      ],
+    },
   },
   album: [
     {

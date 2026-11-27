@@ -1,0 +1,167 @@
+.has-migration-map {
+  background-image: var(--migration-paper);
+}
+.page-inner.migration-inner {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 12px 8px !important;
+  gap: 7px;
+  overflow: hidden;
+}
+.migration-guide,
+.migration-note {
+  text-align: center;
+  color: #7c6953;
+  font-size: 10px;
+  line-height: 1.7;
+  flex-shrink: 0;
+}
+.migration-note {
+  font-size: 9px;
+}
+.migration-fit {
+  flex: 1;
+  min-height: 0;
+  container-type: size;
+  display: grid;
+  place-items: center;
+}
+.migration-board {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 2480 / 3508));
+  aspect-ratio: 2480 / 3508;
+  container-type: inline-size;
+  isolation: isolate;
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.migration-board img {
+  width: 100%;
+  pointer-events: none;
+}
+.migration-base {
+  display: block;
+}
+.migration-route {
+  position: absolute;
+  left: 37.78%;
+  top: 26.28%;
+  width: 21.42% !important;
+  z-index: 1;
+}
+.migration-mascot {
+  position: absolute;
+  left: 58%;
+  top: 74.5%;
+  width: 33% !important;
+  z-index: 2;
+}
+.migration-point,
+.migration-gull {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+  cursor: grab;
+  -webkit-touch-callout: none;
+}
+.migration-point:active,
+.migration-gull:active {
+  cursor: grabbing;
+}
+.migration-point {
+  width: 28px;
+  height: 28px;
+  z-index: 3;
+}
+.migration-point img {
+  width: max(7px, var(--marker-size));
+  max-width: none;
+}
+.migration-point.is-active {
+  z-index: 4;
+}
+.migration-point.is-active:after {
+  content: '';
+  position: absolute;
+  width: 19px;
+  height: 19px;
+  border: 1px solid #b68c36;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #fff9dd88;
+  pointer-events: none;
+}
+.migration-gull {
+  width: clamp(32px, 12cqw, 80px);
+  z-index: 5;
+  filter: drop-shadow(0 2px 2px #5f615446);
+}
+.migration-detail {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 11px;
+  line-height: 1.7;
+  min-height: 20px;
+  flex-shrink: 0;
+  color: #78644c;
+}
+.migration-detail strong {
+  color: #416a5f;
+  font-weight: 500;
+}
+.migration-tools {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+.migration-tools button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  font-size: 10px;
+  color: #6c8069;
+  border-bottom: 1px solid #b0aa8a66;
+}
+.migration-dialog {
+  padding: 0 12px 12px;
+  background: #fff9ec;
+  width: min(96vw, 760px);
+  max-width: 96vw;
+  max-height: 94svh;
+  border-radius: 4px;
+}
+.migration-dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  background: #fff9ec;
+  font-size: 11px;
+  padding: 9px 0;
+}
+.migration-dialog-heading button {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  min-width: 34px;
+}
+.migration-expanded {
+  max-height: 72svh;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.migration-expanded .migration-board {
+  width: max(100%, 540px);
+}
+.migration-dialog .migration-detail {
+  margin-top: 12px;
+}

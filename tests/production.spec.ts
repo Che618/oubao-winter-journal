@@ -67,6 +67,28 @@ for (const viewport of [
     ).toBe(true);
     await page.screenshot({ path: `test-results/production-diary-${viewport.width}.png` });
     await page.getByRole('button', { name: '打开全书目录' }).click();
+    await page
+      .locator('.section-tabs')
+      .getByRole('button', { name: '来时的路', exact: true })
+      .click();
+    const migration = page.locator('.book-page[aria-hidden="false"] .migration-board');
+    await expect
+      .poll(() =>
+        migration
+          .locator('img')
+          .evaluateAll((images) =>
+            images.every((image) => image.complete && image.naturalWidth > 0),
+          ),
+      )
+      .toBe(true);
+    await expect(migration.locator('.migration-point')).toHaveCount(6);
+    const bird = migration.getByRole('button', { name: '拖动海鸥探索迁徙路线' });
+    const birdPosition = await bird.getAttribute('style');
+    await bird.focus();
+    await bird.press('ArrowDown');
+    expect(await bird.getAttribute('style')).not.toBe(birdPosition);
+    await expect(page.locator('.reading-position')).toContainText('来时的路');
+    await page.getByRole('button', { name: '打开全书目录' }).click();
     await page.locator('.section-tabs').getByRole('button', { name: '目录', exact: true }).click();
     await page
       .getByRole('navigation', { name: '本章阅读目录' })

@@ -71,6 +71,9 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
       element.className = `book-page page-${page.kind}`;
       if (page.kind === 'contents' && live.current.chapter.contentsDesign)
         element.classList.add('has-contents-design');
+      if (page.kind === 'journey' && live.current.chapter.journey?.map) {
+        element.classList.add('has-migration-map');
+      }
       element.dataset.pageId = page.id;
       element.dataset.pageKind = page.kind;
       element.setAttribute('aria-label', page.kind === 'cover' ? '日记本封面' : `第${index}页`);

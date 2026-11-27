@@ -23,6 +23,7 @@ import {
   type ActivityConfig,
 } from '../content/types';
 import { readSaved, saveLocal, type Letter } from '../book/storage';
+import { MigrationMap } from './MigrationMap';
 
 export interface PageViewProps {
   page: BookPage;
@@ -449,6 +450,10 @@ export function PageView(props: PageViewProps) {
       );
       break;
     case 'journey':
+      if (chapter.journey?.map) {
+        content = <MigrationMap config={chapter.journey.map} />;
+        break;
+      }
       content = (
         <div className="page-inner journey-inner">
           <div className="eyebrow">

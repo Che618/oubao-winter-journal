@@ -115,7 +115,7 @@ npm run assets -- --photos "红嘴鸥第二章/照片" --chapter chapter-02
 - `diary`：真实日期、天气、日记标题、自然段和落款。
 - `video`：封面、简介，可选 `src`。存在视频才呈现播放控件；有 AI 内容时填写 `aiGenerated: true`，同时应在视频画面内制作标注。
 - `article.blocks`：`paragraph` 自然段、`photo` 图片与图注、`subheading` 小标题。长自然段会自动拆页，保留全部文字。
-- `journey`：可选路线与鸟瞰页。当前为已知起终点示意；360°体验只有在提供真实 `panoramaUrl` 后才显示入口。
+- `journey`：可选路线与鸟瞰页。第一章 `journey.map` 使用新增手绘迁徙地图素材，分层配置底图、线路、海鸥、鸥宝和六个地标；支持拖动、点选、键盘移动、放大操作与还原。未配置地图的章节保留通用起终点页。360°体验只有在提供真实 `panoramaUrl` 后显示。
 - `activities`：可选互动数组，内置 `quiz` 单选课堂与 `link` 外部互动入口。后续新建拼图等类型只需扩展联合类型及对应渲染组件，翻页逻辑保持共用。
 - `ending`：章末文字与可选下一章 ID。
 
@@ -141,7 +141,7 @@ npm run assets -- --photos "红嘴鸥第二章/照片" --chapter chapter-02
 
 ## 翻页模块维护
 
-上游 `page-flip` 固定为2.0.7。项目对其销毁逻辑做两项小修复：停止动画帧循环，以及移除窗口尺寸监听，避免多次切章、重新分页后累积实例。MIT 许可证保留在产物顶部。
+上游 `page-flip` 固定为2.0.7。项目修复销毁时的动画帧循环与窗口监听，并将临时翻页克隆设为 `aria-hidden`、`inert`，避免重复交互元素干扰地图和页面导航。MIT 许可证保留在产物顶部。
 
 `src/vendor/page-flip.js` 是 `npm run vendor` 的生成产物，不直接手改。更新上游时重新核对 `scripts/prepare-page-flip.mjs` 的补丁与生命周期测试；补丁不匹配会明确失败。
 # oubao-winter-journal

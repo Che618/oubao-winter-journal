@@ -7,5 +7,6 @@ import './music.css';
 import './album.css';
 import './design.css';
 import './typography.css';
+import './migration.css';
 
 createRoot(document.getElementById('root')!).render(<App />);

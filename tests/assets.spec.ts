@@ -15,6 +15,7 @@ test('第一章28张素材全部有网页用途，18张照片完整编入相簿'
     const files = readdirSync(sourceRoot, { recursive: true })
       .filter((file) => /\.(png|jpe?g)$/i.test(String(file)))
       .map((file) => String(file).replaceAll(path.sep, '/'))
+      .filter((file) => file.startsWith('第一章 平面素材打包/') || file.startsWith('红嘴鸥照片/'))
       .sort();
     expect(manifest.map((entry) => entry.source).sort()).toEqual(files);
   }
@@ -101,6 +102,7 @@ for (const viewport of [
     for (let i = 0; i < total; i++) {
       const current = page.locator('.book-page[aria-hidden="false"]');
       const kind = await current.getAttribute('data-page-kind');
+      const previousId = await current.getAttribute('data-page-id');
       if (kind === 'album') {
         spreads++;
         const images = current.locator('img');
@@ -126,6 +128,13 @@ for (const viewport of [
       }
       if (await page.getByRole('button', { name: '下一页', exact: true }).isDisabled()) break;
       await page.getByRole('button', { name: '下一页', exact: true }).click();
+      await expect
+        .poll(() => page.locator('.book-page[aria-hidden="false"]').getAttribute('data-page-id'))
+        .not.toBe(previousId);
+      await expect(page.locator('.book-page[aria-hidden="false"]')).toHaveAttribute(
+        'data-motion-ready',
+        'true',
+      );
     }
     await expect(page.locator('.reading-position')).toContainText('合上日记');
     expect(spreads).toBe(9);

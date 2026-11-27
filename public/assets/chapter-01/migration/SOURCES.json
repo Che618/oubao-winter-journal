@@ -1,0 +1,41 @@
+{
+  "layers": [
+    {
+      "source": "红嘴鸥手绘迁徙地图制作底板.psd.png",
+      "asset": "map.webp"
+    },
+    {
+      "source": "线路.png",
+      "asset": "route.webp"
+    },
+    {
+      "source": "红嘴鸥移动光标图.png",
+      "asset": "gull.webp"
+    },
+    {
+      "source": "飞翔的鸥宝.png",
+      "asset": "oubao-flying.webp"
+    }
+  ],
+  "paper": {
+    "source": "4翻开日记内页放地图的纯页面.png",
+    "asset": "paper.webp"
+  },
+  "markers": {
+    "source": "所有地标点（需放在线路上面）.png",
+    "assets": [
+      "point-siberia.webp",
+      "point-inner-mongolia.webp",
+      "point-shahu.webp",
+      "point-yanan.webp",
+      "point-xian.webp",
+      "point-hanzhong.webp"
+    ]
+  },
+  "references": [
+    "4翻开日记内页+地图 内页制作底板.png",
+    "4翻开日记内页+地图 内页预览图.png",
+    "红嘴鸥手绘迁徙地图 预览图.png"
+  ],
+  "note": "制作底板、预览图用于核对纸页布局、路线与地标叠放；网页使用分层素材，不重复插入整幅预览。"
+}

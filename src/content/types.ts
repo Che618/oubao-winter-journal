@@ -42,10 +42,29 @@ export interface ChapterContent {
     description: string;
     stops: { label: string; note: string }[];
     aerial: { src: string; alt: string; panoramaUrl?: string };
+    map?: MigrationMapConfig;
   };
   /** 后续小课堂、拼图等在此注册，不必改动翻书逻辑。 */
   activities?: ActivityConfig[];
   ending: { text: string; nextChapterId?: string };
+}
+
+export interface MigrationMapConfig {
+  base: string;
+  paper: string;
+  route: string;
+  cursor: string;
+  mascot: string;
+  /** 坐标以原地图2480×3508为基准，来源是提供的预览图。 */
+  stops: {
+    id: string;
+    label: string;
+    note: string;
+    x: number;
+    y: number;
+    marker: string;
+    markerWidth: number;
+  }[];
 }
 
 export type ActivityConfig =

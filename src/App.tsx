@@ -249,6 +249,7 @@ export default function App() {
           '--scene-image': `url("${asset('notebook-scene.webp')}")`,
           '--scene-edge': `url("${asset('scene-edge.webp')}")`,
           '--contents-image': `url("${content?.contentsDesign ?? asset('notebook-blank.webp')}")`,
+          '--migration-paper': `url("${content?.journey?.map?.paper ?? asset('notebook-blank.webp')}")`,
         } as React.CSSProperties
       }
     >
