@@ -8,15 +8,15 @@ const source = path.join(root, '红嘴鸥第一章/第一章 迁徙地图平面�
 const output = path.join(root, 'public/assets/chapter-01/migration');
 await mkdir(output, { recursive: true });
 const jobs = [
-  ['红嘴鸥手绘迁徙地图制作底板.psd.png', 'map.webp', 1488],
-  ['线路.png', 'route.webp', 816],
+  ['红嘴鸥手绘迁徙地图制作底板.psd.png', 'map.webp', 1240],
+  ['线路.png', 'route.webp', 384],
   ['红嘴鸥移动光标图.png', 'gull.webp', 220],
   ['飞翔的鸥宝.png', 'oubao-flying.webp', 360],
 ];
 for (const [file, target, width] of jobs) {
   await sharp(path.join(source, file))
     .resize({ width, withoutEnlargement: true })
-    .webp({ quality: 91, alphaQuality: 100 })
+    .webp({ quality: 86, alphaQuality: 100, effort: 6 })
     .toFile(path.join(output, target));
 }
 await sharp(path.join(source, '4翻开日记内页放地图的纯页面.png'))

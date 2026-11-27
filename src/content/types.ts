@@ -52,6 +52,7 @@ export interface ChapterContent {
 export interface MigrationMapConfig {
   base: string;
   paper: string;
+  scene?: string;
   route: string;
   cursor: string;
   mascot: string;

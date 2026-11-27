@@ -106,6 +106,7 @@ const chapter: ChapterContent = {
     map: {
       base: asset('chapter-01/migration/map.webp'),
       paper: asset('screen/migration-paper.webp'),
+      scene: asset('screen/migration-scene.webp'),
       route: asset('chapter-01/migration/route.webp'),
       cursor: asset('chapter-01/migration/gull.webp'),
       mascot: asset('chapter-01/migration/oubao-flying.webp'),

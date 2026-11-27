@@ -1,5 +1,94 @@
 import { test, expect } from '@playwright/test';
 
+async function openMap(page: import('@playwright/test').Page) {
+  await page.goto('/');
+  await page.locator('.flip-engine[data-ready="true"]').waitFor();
+  await page.getByRole('button', { name: '打开全书目录' }).click();
+  await page
+    .locator('.section-tabs')
+    .getByRole('button', { name: '来时的路', exact: true })
+    .click();
+}
+
+test('海鸥沿路线飞行，支持暂停、复位、离页停止和关闭动效', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await openMap(page);
+  const active = page.locator('.book-page[aria-hidden="false"]');
+  const gull = active.locator('.migration-gull');
+  const initial = await gull.getAttribute('style');
+  await expect(active).toHaveAttribute('data-motion-ready', 'true');
+  await expect(active.locator('.migration-mascot')).toHaveCSS('animation-name', 'migration-float');
+  await active.getByRole('button', { name: '沿路线飞行' }).click();
+  await expect(active.getByRole('button', { name: '沿路线飞行' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect
+    .poll(() =>
+      gull.evaluate((el) => el.getAnimations().some((a) => (a.currentTime as number) > 100)),
+    )
+    .toBe(true);
+  // 加速浏览器动画时间，验证终点与完成状态，无需让测试空等整段飞行。
+  await gull.evaluate((el) => el.getAnimations().forEach((animation) => animation.finish()));
+  await expect(active.getByRole('button', { name: '沿路线飞行' })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+  await expect(active.locator('[role="status"]').first()).toContainText('汉中');
+  expect(await gull.getAttribute('style')).not.toBe(initial);
+  await active.getByRole('button', { name: '还原位置' }).click();
+  expect(await gull.getAttribute('style')).toBe(initial);
+  await active.getByRole('button', { name: '沿路线飞行' }).click();
+  await page.getByRole('button', { name: '下一页', exact: true }).click();
+  await expect(page.locator('.reading-position')).toContainText('鸟瞰汉江');
+  await expect(page.locator('.app-shell')).toHaveAttribute('data-map-page', 'false');
+  await expect
+    .poll(() => page.locator('.migration-gull').evaluate((el) => el.getAnimations().length))
+    .toBe(0);
+  await page.getByRole('button', { name: '上一页', exact: true }).click();
+  await expect(active.getByRole('button', { name: '沿路线飞行' })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  );
+  await page.getByRole('button', { name: '装饰动效' }).click();
+  await expect(active.locator('.migration-mascot')).toHaveCSS('animation-name', 'none');
+  await active.getByRole('button', { name: '沿路线飞行' }).click();
+  await expect.poll(() => gull.evaluate((el) => el.getAnimations().length)).toBe(0);
+});
+
+test('连续拖动只测量一次地图，位置更新跟随指针且没有误翻页', async ({ page }) => {
+  await openMap(page);
+  const gull = page.locator('.book-page[aria-hidden="false"] .migration-gull');
+  const initial = await gull.boundingBox();
+  await page.evaluate(() => {
+    const original = Element.prototype.getBoundingClientRect;
+    (window as unknown as { mapMeasurements: number }).mapMeasurements = 0;
+    Element.prototype.getBoundingClientRect = function () {
+      if (this.classList.contains('migration-board'))
+        (window as unknown as { mapMeasurements: number }).mapMeasurements++;
+      return original.call(this);
+    };
+  });
+  await page.mouse.move(initial!.x + initial!.width / 2, initial!.y + initial!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    initial!.x + initial!.width / 2 + 30,
+    initial!.y + initial!.height / 2 + 70,
+    { steps: 30 },
+  );
+  const during = await gull.boundingBox();
+  expect(during!.x - initial!.x).toBeCloseTo(30, 0);
+  expect(during!.y - initial!.y).toBeCloseTo(70, 0);
+  await page.mouse.up();
+  const after = await gull.boundingBox();
+  expect(after!.x).toBeCloseTo(during!.x, 0);
+  expect(after!.y).toBeCloseTo(during!.y, 0);
+  expect(
+    await page.evaluate(() => (window as unknown as { mapMeasurements: number }).mapMeasurements),
+  ).toBe(1);
+  await expect(page.locator('.reading-position')).toContainText('来时的路');
+});
+
 test('地图不依赖翻书组件给图片补src，目录直达后自行加载所有图层', async ({ page }) => {
   await page.addInitScript(() => {
     const select = Element.prototype.querySelectorAll;
@@ -128,9 +217,15 @@ for (const viewport of [
     const layout = await active.locator('.migration-inner').evaluate((element) => ({
       clipped: element.scrollHeight > element.clientHeight + 1,
       boardWidth: element.querySelector('.migration-board')!.getBoundingClientRect().width,
+      pageWidth: element.clientWidth,
     }));
     expect(layout.clipped).toBe(false);
-    expect(layout.boardWidth).toBeGreaterThan(100);
+    expect(layout.boardWidth).toBeGreaterThan(layout.pageWidth * 0.93);
+    await expect(
+      active.locator('.migration-note, .migration-guide, .migration-inner .migration-detail'),
+    ).toHaveCount(0);
+    await expect(active.locator('.page-footer')).not.toBeVisible();
+    await expect(page.locator('.app-shell')).toHaveAttribute('data-map-page', 'true');
     await page.screenshot({ path: `test-results/migration-${viewport.width}.png` });
     const gull = active.getByRole('button', { name: '拖动海鸥探索迁徙路线' });
     const initial = await gull.getAttribute('style');
@@ -190,14 +285,13 @@ for (const viewport of [
       .toBeGreaterThan(0);
     await active.getByRole('button', { name: '还原位置' }).click();
     expect(await gull.getAttribute('style')).toBe(initial);
-    await expect(active.locator('.migration-note')).toContainText('路线示意');
     // 键盘也能选择与移动，保持书页本身不动。
     const xian = active.getByRole('button', { name: '拖动地点：西安', exact: true });
     const before = await xian.getAttribute('style');
     await xian.focus();
     await xian.press('ArrowRight');
     expect(await xian.getAttribute('style')).not.toBe(before);
-    await expect(active.locator('.migration-inner .migration-detail')).toContainText('西安');
+    await expect(active.locator('.migration-inner [role="status"]')).toContainText('西安');
     await expect(page.locator('.reading-position')).toHaveText(position!);
   });
 }

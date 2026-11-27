@@ -30,4 +30,10 @@ await sharp(path.join(root, 'public/assets/chapter-01/migration/paper.webp'))
   .resize({ width: 900 })
   .webp({ quality: 90, effort: 6 })
   .toFile(path.join(target, 'migration-paper.webp'));
+await sharp(
+  path.join(root, '红嘴鸥第一章/第一章 迁徙地图平面素材打包/4翻开日记内页放地图的纯页面.png'),
+)
+  .resize({ width: 900 })
+  .webp({ quality: 90, effort: 6 })
+  .toFile(path.join(target, 'migration-scene.webp'));
 console.log('首屏与纸张的轻量显示副本已生成，原始设计和无损校对图保留。');

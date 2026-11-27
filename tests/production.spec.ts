@@ -110,6 +110,9 @@ for (const viewport of [
       )
       .toBe(true);
     await expect(migration.locator('.migration-point')).toHaveCount(6);
+    await expect(page.locator('.book-page[aria-hidden="false"] .page-footer')).not.toBeVisible();
+    await expect(page.locator('.book-stage')).toHaveCSS('background-image', /migration-scene.webp/);
+    await page.screenshot({ path: `test-results/production-map-${viewport.width}.png` });
     const bird = migration.getByRole('button', { name: '拖动海鸥探索迁徙路线' });
     const birdPosition = await bird.getAttribute('style');
     await bird.focus();

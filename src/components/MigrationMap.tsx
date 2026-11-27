@@ -6,12 +6,13 @@ import {
   type KeyboardEvent,
   type CSSProperties,
 } from 'react';
-import { Maximize2, RotateCcw, X } from 'lucide-react';
+import { Bird, Maximize2, RotateCcw, X } from 'lucide-react';
 import type { MigrationMapConfig } from '../content/types';
 
 type Point = { x: number; y: number };
 const width = 2480,
   height = 3508;
+const initialGull = { x: 1040, y: 1080 };
 const bounded = (point: Point): Point => ({
   x: Math.max(80, Math.min(width - 80, point.x)),
   y: Math.max(650, Math.min(height - 180, point.y)),
@@ -21,12 +22,22 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
   const board = useRef<HTMLDivElement>(null);
   const fit = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const drag = useRef<{ id: string; pointer: number; start: Point; origin: Point } | null>(null);
+  const drag = useRef<{
+    id: string;
+    pointer: number;
+    start: Point;
+    origin: Point;
+    scale: Point;
+    target: HTMLButtonElement;
+    next: Point;
+  } | null>(null);
+  const frame = useRef(0);
+  const flight = useRef<Animation | null>(null);
   const [points, setPoints] = useState<Record<string, Point>>({});
-  const [gull, setGull] = useState<Point>({ x: 1205, y: 1000 });
+  const [gull, setGull] = useState<Point>(initialGull);
   const [active, setActive] = useState(config.stops[0].id);
   const [expanded, setExpanded] = useState(false);
-  const [moved, setMoved] = useState(false);
+  const [flying, setFlying] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [revision, setRevision] = useState(0);
@@ -35,36 +46,35 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
     const area = fit.current;
     const page = area?.closest('.book-page');
     if (!area || !page) return;
-    const update = () => {
+    const updateVisibility = () => {
       // 地图自己持有图片加载状态，避免React重绘/放大返回后外部赋值的src丢失。
       if (page.classList.contains('is-preloaded') || page.getAttribute('aria-hidden') === 'false')
         setLoaded(true);
-      if (area.clientWidth && area.clientHeight)
-        setBoardWidth(Math.floor(Math.min(area.clientWidth, (area.clientHeight * width) / height)));
+      if (page.getAttribute('aria-hidden') === 'true') flight.current?.cancel();
     };
-    const visibility = new MutationObserver(update);
+    const visibility = new MutationObserver(updateVisibility);
     visibility.observe(page, {
       attributes: true,
       attributeFilter: ['class', 'aria-hidden'],
     });
-    const resize = new ResizeObserver(update);
+    // 只在真实尺寸改变时测量；翻页库频繁改class时不强制同步布局。
+    const resize = new ResizeObserver(([entry]) => {
+      const { width: availableWidth, height: availableHeight } = entry.contentRect;
+      if (availableWidth && availableHeight)
+        setBoardWidth(Math.floor(Math.min(availableWidth, (availableHeight * width) / height)));
+    });
     resize.observe(area);
-    update();
+    updateVisibility();
     return () => {
       visibility.disconnect();
       resize.disconnect();
+      cancelAnimationFrame(frame.current);
+      flight.current?.cancel();
     };
   }, []);
   const source = (url: string) =>
     loaded || expanded ? (revision ? `${url}?retry=${revision}` : url) : undefined;
   const stop = config.stops.find((item) => item.id === active)!;
-  const coordinates = (event: PointerEvent): Point => {
-    const rect = board.current!.getBoundingClientRect();
-    return {
-      x: ((event.clientX - rect.left) / rect.width) * width,
-      y: ((event.clientY - rect.top) / rect.height) * height,
-    };
-  };
   function apply(id: string, point: Point) {
     const next = bounded(point);
     if (id === 'gull') {
@@ -80,24 +90,52 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
     } else {
       setPoints((previous) => ({ ...previous, [id]: next }));
       setActive(id);
-      setMoved(true);
     }
   }
   function begin(event: PointerEvent<HTMLButtonElement>, id: string, origin: Point) {
     if (event.button !== 0) return;
     event.preventDefault();
     event.stopPropagation();
+    flight.current?.cancel();
+    const rect = board.current!.getBoundingClientRect();
     event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = { id, pointer: event.pointerId, start: coordinates(event), origin };
+    event.currentTarget.dataset.dragging = 'true';
+    drag.current = {
+      id,
+      pointer: event.pointerId,
+      start: { x: event.clientX, y: event.clientY },
+      origin,
+      scale: { x: rect.width / width, y: rect.height / height },
+      target: event.currentTarget,
+      next: origin,
+    };
     if (id !== 'gull') setActive(id);
   }
   function move(event: PointerEvent<HTMLButtonElement>) {
     if (!drag.current || event.pointerId !== drag.current.pointer) return;
-    const point = coordinates(event),
-      { id, start, origin } = drag.current;
-    apply(id, { x: origin.x + point.x - start.x, y: origin.y + point.y - start.y });
+    const current = drag.current;
+    current.next = bounded({
+      x: current.origin.x + (event.clientX - current.start.x) / current.scale.x,
+      y: current.origin.y + (event.clientY - current.start.y) / current.scale.y,
+    });
+    if (frame.current) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = 0;
+      if (drag.current !== current) return;
+      const dx = (current.next.x - current.origin.x) * current.scale.x;
+      const dy = (current.next.y - current.origin.y) * current.scale.y;
+      // 拖动期间仅移动当前合成层；结束才提交React状态，避免重绘整张地图。
+      current.target.style.transform = `translate(-50%, -50%) translate3d(${dx}px, ${dy}px, 0)`;
+    });
   }
   function end(event: PointerEvent<HTMLButtonElement>) {
+    const current = drag.current;
+    if (!current || event.pointerId !== current.pointer) return;
+    cancelAnimationFrame(frame.current);
+    frame.current = 0;
+    current.target.style.removeProperty('transform');
+    delete current.target.dataset.dragging;
+    apply(current.id, current.next);
     drag.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
@@ -113,12 +151,47 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
     if (!delta) return;
     event.preventDefault();
     event.stopPropagation();
+    flight.current?.cancel();
     apply(id, { x: point.x + delta.x, y: point.y + delta.y });
   }
   const position = (point: Point): CSSProperties => ({
     left: `${(point.x / width) * 100}%`,
     top: `${(point.y / height) * 100}%`,
   });
+  function flyRoute() {
+    flight.current?.cancel();
+    const target = board.current?.querySelector<HTMLButtonElement>('.migration-gull');
+    if (!target) return;
+    const rect = board.current!.getBoundingClientRect();
+    const destination = config.stops.at(-1)!;
+    const finish = () => {
+      setGull({ x: destination.x - 120, y: destination.y - 65 });
+      setActive(destination.id);
+      setFlying(false);
+      flight.current = null;
+    };
+    if (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      target.closest('.app-shell')?.getAttribute('data-motion') === 'off'
+    ) {
+      finish();
+      return;
+    }
+    const route = [gull, ...config.stops.map((point) => ({ x: point.x - 120, y: point.y - 65 }))];
+    const animation = target.animate(
+      route.map((point) => ({
+        transform: `translate(-50%, -50%) translate3d(${((point.x - gull.x) / width) * rect.width}px, ${((point.y - gull.y) / height) * rect.height}px, 0)`,
+      })),
+      { duration: 10000, easing: 'linear' },
+    );
+    flight.current = animation;
+    setFlying(true);
+    animation.onfinish = finish;
+    animation.oncancel = () => {
+      flight.current = null;
+      setFlying(false);
+    };
+  }
   const map = (
     <div
       className="migration-board"
@@ -165,6 +238,7 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
             }
             aria-label={`拖动地点：${item.label}`}
             aria-pressed={active === item.id}
+            title={`${item.label} · ${item.note}`}
             onPointerDown={(e) => begin(e, item.id, point)}
             onPointerMove={move}
             onPointerUp={end}
@@ -183,6 +257,7 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
           width: Math.max(32, Math.min(80, (expanded ? 540 : boardWidth || 250) * 0.12)),
         }}
         aria-label="拖动海鸥探索迁徙路线"
+        title="拖动海鸥探索迁徙路线"
         onPointerDown={(e) => begin(e, 'gull', gull)}
         onPointerMove={move}
         onPointerUp={end}
@@ -203,7 +278,6 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
     <>
       <div className="page-inner migration-inner">
         <h2 className="sr-only">红嘴鸥越冬迁徙路线</h2>
-        <p className="migration-guide">拖动海鸥或地点，看看来时的路</p>
         <div className="migration-fit" ref={fit}>
           {!expanded && map}
         </div>
@@ -218,33 +292,41 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
             地图加载未完成，点击重试
           </button>
         )}
-        {details}
         <div className="migration-tools">
           <button
+            aria-label="沿路线飞行"
+            title="沿路线飞行"
+            aria-pressed={flying}
+            onClick={() => (flying ? flight.current?.cancel() : flyRoute())}
+          >
+            <Bird size={16} />
+          </button>
+          <button
+            aria-label="放大操作"
+            title="放大操作"
             onClick={() => {
+              flight.current?.cancel();
               setExpanded(true);
               dialog.current?.showModal();
             }}
           >
-            <Maximize2 size={13} />
-            放大操作
+            <Maximize2 size={15} />
           </button>
           <button
+            aria-label="还原位置"
+            title="还原位置"
             onClick={() => {
+              flight.current?.cancel();
               setPoints({});
-              setGull({ x: 1205, y: 1000 });
+              setGull(initialGull);
               setActive(config.stops[0].id);
-              setMoved(false);
             }}
           >
-            <RotateCcw size={13} />
-            还原位置
+            <RotateCcw size={15} />
           </button>
         </div>
-        <p className="migration-note">
-          {moved
-            ? '地点已临时移动，可还原；不改变原图地理信息。'
-            : '路线示意，非精确地理地图 · 时间沿用素材标注'}
+        <p className="sr-only" role="status">
+          {stop.label} · {stop.note}
         </p>
       </div>
       <dialog

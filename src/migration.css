@@ -1,27 +1,23 @@
 .has-migration-map {
   background-image: var(--migration-paper);
 }
+[data-map-page='true'] .book-stage {
+  background-image: var(--migration-scene, var(--scene-image));
+}
+.has-migration-map .page-footer,
+.has-migration-map .page-corner,
+.has-migration-map .scroll-hint {
+  display: none;
+}
 .page-inner.migration-inner {
-  display: flex;
-  flex-direction: column;
-  padding: 14px 12px 8px !important;
-  gap: 7px;
+  position: relative;
+  height: 100%;
+  padding: 0 !important;
   overflow: hidden;
 }
-.migration-guide,
-.migration-note {
-  text-align: center;
-  color: #7c6953;
-  font-size: 10px;
-  line-height: 1.7;
-  flex-shrink: 0;
-}
-.migration-note {
-  font-size: 9px;
-}
 .migration-fit {
-  flex: 1;
-  min-height: 0;
+  position: absolute;
+  inset: 7.5% 0.25% 0.7%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,6 +30,8 @@
   touch-action: pan-x pan-y;
   user-select: none;
   -webkit-user-select: none;
+  contain: layout;
+  flex: none;
 }
 .migration-board img {
   width: 100%;
@@ -97,7 +95,10 @@
 .migration-gull {
   width: 36px;
   z-index: 5;
-  filter: drop-shadow(0 2px 2px #5f615446);
+}
+.migration-point[data-dragging],
+.migration-gull[data-dragging] {
+  will-change: transform;
 }
 .migration-detail {
   display: flex;
@@ -115,19 +116,22 @@
   font-weight: 500;
 }
 .migration-tools {
+  position: absolute;
+  top: 0.6%;
+  left: 2%;
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-shrink: 0;
+  gap: 2px;
 }
 .migration-tools button {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 28px;
-  font-size: 10px;
-  color: #6c8069;
-  border-bottom: 1px solid #b0aa8a66;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: #56796d;
+  border-radius: 50%;
+}
+.migration-tools button[aria-pressed='true'] {
+  background: #d5e7cc;
 }
 .migration-dialog {
   padding: 0 12px 12px;
@@ -167,8 +171,58 @@
   margin-top: 12px;
 }
 .migration-retry {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  top: 40%;
+  z-index: 6;
+  background: #fff9ec;
   font-size: 11px;
   color: #8f604a;
   padding: 6px;
   flex-shrink: 0;
+}
+
+/* 动效只运行于翻稳的当前页；只改变小图层的transform/opacity。 */
+@media (prefers-reduced-motion: no-preference) {
+  [data-motion='on'] .book-page[data-motion-ready='true'] .migration-gull img {
+    animation: migration-soar 3.6s ease-in-out infinite;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .migration-mascot {
+    animation: migration-float 5s ease-in-out infinite;
+  }
+  [data-motion='on'] .book-page[data-motion-ready='true'] .migration-point.is-active:after {
+    animation: migration-beacon 2.4s ease-out infinite;
+  }
+  .migration-gull[data-dragging] img {
+    animation: none !important;
+  }
+}
+@keyframes migration-soar {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(5deg);
+  }
+}
+@keyframes migration-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes migration-beacon {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
 }

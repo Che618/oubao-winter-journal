@@ -241,6 +241,7 @@ export default function App() {
     <div
       className="app-shell"
       data-motion={motion.enabled ? 'on' : 'off'}
+      data-map-page={currentPage?.kind === 'journey' && !!content?.journey?.map}
       style={
         {
           '--paper-image': `url("${asset('paper.webp')}")`,
@@ -251,6 +252,7 @@ export default function App() {
           '--scene-edge': `url("${asset('screen/scene-edge.webp')}")`,
           '--contents-image': `url("${content?.contentsDesign ?? asset('notebook-blank.webp')}")`,
           '--migration-paper': `url("${content?.journey?.map?.paper ?? asset('notebook-blank.webp')}")`,
+          '--migration-scene': `url("${content?.journey?.map?.scene ?? asset('screen/notebook-scene.webp')}")`,
         } as React.CSSProperties
       }
     >
