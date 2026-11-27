@@ -58,3 +58,25 @@
 .diary-flow .flow-title {
   font-weight: 400;
 }
+.wechat-comment-invitation {
+  margin-top: 24px;
+  padding: 23px 15px;
+  border-block: 1px solid #b6aa874d;
+  text-align: center;
+  color: #587568;
+}
+.wechat-comment-invitation > svg {
+  margin: 0 auto 14px;
+  color: #a47e59;
+}
+.wechat-comment-invitation p {
+  font-size: 14px;
+  line-height: 2;
+}
+.wechat-comment-invitation > span {
+  display: block;
+  font-size: 11px;
+  color: #9a8b73;
+  margin-top: 14px;
+  line-height: 1.8;
+}

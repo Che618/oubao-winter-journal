@@ -127,6 +127,16 @@ for (const viewport of [
       await expect
         .poll(() => photo.evaluate((image) => (image as HTMLImageElement).naturalWidth))
         .toBeGreaterThan(0);
+    await page.getByRole('button', { name: '打开全书目录' }).click();
+    await page
+      .locator('.section-tabs')
+      .getByRole('button', { name: '江边悄悄话', exact: true })
+      .click();
+    await expect(
+      page.locator('.book-page[aria-hidden="false"] .wechat-comment-invitation'),
+    ).toContainText('微信公众号文章');
+    await expect(page.locator('textarea')).toHaveCount(0);
+    await page.screenshot({ path: `test-results/production-comments-${viewport.width}.png` });
     expect(errors).toEqual([]);
   });
 }

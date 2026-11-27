@@ -34,7 +34,7 @@ const pageNames: Record<BookPage['kind'], string> = {
   journey: '来时的路',
   aerial: '鸟瞰汉江',
   activity: '和鸥宝一起玩',
-  letter: '给鸥宝回信',
+  letter: '江边悄悄话',
 };
 
 function getPageName(page: BookPage) {

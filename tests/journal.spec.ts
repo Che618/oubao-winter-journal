@@ -235,20 +235,23 @@ for (const viewport of [
   });
 }
 
-test('回信仅本机保存，输入和选字不翻页；重新进入可继续阅读', async ({ page }) => {
+test('章末引导到公众号评论区，网页不提供留言表单并可恢复阅读位置', async ({ page }) => {
   await ready(page);
-  await goTo(page, '给鸥宝回信');
-  const position = await page.locator('.reading-position').textContent();
-  await page.getByRole('textbox', { name: '给鸥宝的回信' }).fill('鸥宝，欢迎来到汉中！');
-  await expect(page.locator('.reading-position')).toHaveText(position!);
-  await page.getByRole('button', { name: '把回信收进日记' }).click();
-  await expect(page.getByRole('button', { name: '回信已珍藏' })).toBeVisible();
-  await expect(page.locator('.local-note')).toHaveText('仅保存在当前设备，不会公开发布。');
+  await goTo(page, '江边悄悄话');
+  await expect(
+    page.locator('.book-page[aria-hidden="false"] .wechat-comment-invitation'),
+  ).toContainText('在文末评论区');
+  await expect(page.locator('textarea')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '把回信收进日记' })).toHaveCount(0);
+  expect(
+    await page.evaluate(() => Object.keys(localStorage).filter((key) => key.includes('letter:'))),
+  ).toEqual([]);
   await page.reload();
   await page.getByRole('button', { name: '继续上次的阅读' }).click();
-  await expect(page.getByRole('textbox', { name: '给鸥宝的回信' })).toHaveValue(
-    '鸥宝，欢迎来到汉中！',
-  );
+  await expect(page.locator('.reading-position')).toContainText('江边悄悄话');
+  await expect(
+    page.locator('.book-page[aria-hidden="false"] .wechat-comment-invitation'),
+  ).toContainText('微信公众号文章');
 });
 
 test('改变屏幕尺寸保持阅读区域，重建翻书实例不报错', async ({ page }) => {
@@ -272,7 +275,7 @@ test('改变屏幕尺寸保持阅读区域，重建翻书实例不报错', async
   expect(errors).toEqual([]);
 });
 
-test('只新增章节配置即可切换第二章，并复用小课堂与独立回信', async ({ page }) => {
+test('只新增章节配置即可切换第二章，并复用小课堂与公众号留言引导', async ({ page }) => {
   await page.route(/\/src\/content\/chapters\.ts(?:\?.*)?$/, async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
@@ -290,13 +293,16 @@ test('只新增章节配置即可切换第二章，并复用小课堂与独立�
   await goTo(page, '和鸥宝一起玩');
   await page.getByRole('button', { name: '第一项', exact: true }).click();
   await expect(page.locator('.quiz-feedback')).toContainText('答对啦');
-  await goTo(page, '给鸥宝回信');
-  await expect(page.getByRole('textbox', { name: '给鸥宝的回信' })).toHaveValue('');
-  await page.getByRole('textbox', { name: '给鸥宝的回信' }).fill('这是第二章回信。');
-  await page.getByRole('button', { name: '把回信收进日记' }).click();
+  await goTo(page, '江边悄悄话');
+  await expect(
+    page.locator('.book-page[aria-hidden="false"] .wechat-comment-invitation'),
+  ).toContainText('微信公众号文章');
+  await expect(page.locator('textarea')).toHaveCount(0);
   await page.getByRole('button', { name: '打开全书目录' }).click();
   await page.locator('.drawer-chapter').filter({ hasText: '先至' }).click();
   await expect(page.locator('.book-page[aria-hidden="false"] h2')).toHaveText('鸥宝！');
-  await goTo(page, '给鸥宝回信');
-  await expect(page.getByRole('textbox', { name: '给鸥宝的回信' })).toHaveValue('');
+  await goTo(page, '江边悄悄话');
+  await expect(
+    page.locator('.book-page[aria-hidden="false"] .wechat-comment-invitation'),
+  ).toContainText('微信公众号文章');
 });

@@ -20,7 +20,3 @@ export interface ReadingPosition {
   pageId: string;
   pageIndex: number;
 }
-export interface Letter {
-  text: string;
-  updatedAt: string;
-}

@@ -8,7 +8,7 @@ import {
   Feather,
   MapPin,
   Play,
-  Send,
+  MessageCircle,
   Heart,
   Compass,
   Image as ImageIcon,
@@ -22,7 +22,6 @@ import {
   type ContentBlock,
   type ActivityConfig,
 } from '../content/types';
-import { readSaved, saveLocal, type Letter } from '../book/storage';
 import { MigrationMap } from './MigrationMap';
 
 export interface PageViewProps {
@@ -115,71 +114,38 @@ function Paragraphs({
   );
 }
 
-function LetterPage({
+function CommentsInvitation({
   chapter,
   selectChapter,
   notify,
 }: Pick<PageViewProps, 'chapter' | 'selectChapter' | 'notify'>) {
-  const saved = readSaved<Letter | null>(`letter:${chapter.id}`, null);
-  const [text, setText] = useState(saved?.text ?? '');
-  const [stored, setStored] = useState(!!saved);
-  const [saveCount, setSaveCount] = useState(0);
   const next = chapter.ending.nextChapterId ? getChapter(chapter.ending.nextChapterId) : undefined;
-  function store() {
-    if (!text.trim()) {
-      notify('先给鸥宝写一句话吧。');
-      return;
-    }
-    if (
-      saveLocal(`letter:${chapter.id}`, { text: text.trim(), updatedAt: new Date().toISOString() })
-    ) {
-      setStored(true);
-      setSaveCount((value) => value + 1);
-      notify('回信已收进这台设备的日记本。');
-    } else notify('当前浏览器无法保存，请先复制你的回信。');
-  }
   return (
     <div className="page-inner letter-inner">
       <div className="eyebrow">
         <Feather size={13} /> 江边悄悄话
       </div>
       <h2>
-        想对鸥宝
+        把悄悄话
         <br />
-        说点什么？
+        留在评论区
       </h2>
       <p className="soft-copy">
-        读完这页日记，
+        想对鸥宝说的话，
         <br />
-        也留下一点你的冬日心情吧。
+        就写在微信公众号文章的评论区吧。
       </p>
-      <label className="sr-only" htmlFor={`letter-${chapter.id}`}>
-        给鸥宝的回信
-      </label>
-      <textarea
-        id={`letter-${chapter.id}`}
-        value={text}
-        maxLength={300}
-        placeholder="亲爱的鸥宝，……"
-        onChange={(e) => {
-          setText(e.target.value);
-          setStored(false);
-        }}
-      />
-      <div className="letter-counter">{text.length} / 300</div>
-      <div className="letter-save">
-        <button className="ink-button" onClick={store}>
-          {stored ? <Check size={15} /> : <Send size={15} />}{' '}
-          {stored ? '回信已珍藏' : '把回信收进日记'}
-        </button>
-        {saveCount > 0 && (
-          <span className="letter-seal" aria-hidden="true" key={saveCount}>
-            <img src={asset('footprint.webp')} alt="" />
-            鸥宝收好啦
-          </span>
-        )}
+      <div className="wechat-comment-invitation">
+        <MessageCircle size={30} aria-hidden="true" />
+        <p>
+          回到发布《鸥宝越冬志》的
+          <br />
+          微信公众号文章，
+          <br />
+          在文末评论区留下你的冬日心情。
+        </p>
+        <span>一江相逢，也想听听你的故事。</span>
       </div>
-      <p className="local-note">仅保存在当前设备，不会公开发布。</p>
       <div className="next-chapter-note">
         <span className="eyebrow">把下一页，留给下一次相遇</span>
         <p>“{chapter.ending.text}”</p>
@@ -264,7 +230,7 @@ export function PageView(props: PageViewProps) {
           { section: 'article', title: '江边剪报' },
           ...(chapter.album?.length ? [{ section: 'album', title: '汉江影像' }] : []),
           ...(chapter.journey ? [{ section: 'journey', title: '来时的路' }] : []),
-          { section: 'letter', title: '给鸥宝回信' },
+          { section: 'letter', title: '江边悄悄话' },
         ] as const;
         content = (
           <div className="page-inner original-contents">
@@ -581,7 +547,7 @@ export function PageView(props: PageViewProps) {
       );
       break;
     case 'letter':
-      content = <LetterPage {...props} />;
+      content = <CommentsInvitation {...props} />;
       break;
     case 'activity':
       content = <Activity activity={page.activity} />;
