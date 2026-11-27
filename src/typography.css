@@ -5,6 +5,9 @@
   font-display: swap;
   src: url('./fonts/diary-kai.woff2') format('woff2');
 }
+.prose p[data-continued='true'] {
+  text-indent: 0;
+}
 .diary-flow,
 .article-flow .prose,
 .intro-copy {

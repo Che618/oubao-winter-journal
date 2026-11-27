@@ -119,6 +119,31 @@ for (const viewport of [
         .filter((b: { type: string }) => b.type === 'paragraph')
         .map((b: { text: string }) => b.text)
         .join('');
+      const originalParagraphs = chapter.article.blocks
+        .filter((block: { type: string }) => block.type === 'paragraph')
+        .map((block: { text: string }) => block.text);
+      let sourceIndex = 0,
+        offset = 0,
+        continuations = 0;
+      const indentErrors: string[] = [];
+      for (const element of document.querySelectorAll('.article-flow [data-source-paragraph]')) {
+        const text = element.textContent ?? '';
+        const continued = offset > 0;
+        const marked = element.getAttribute('data-continued') === 'true';
+        const indent = parseFloat(getComputedStyle(element).textIndent);
+        if (
+          originalParagraphs[sourceIndex]?.slice(offset, offset + text.length) !== text ||
+          marked !== continued ||
+          (continued ? indent !== 0 : indent <= 0)
+        )
+          indentErrors.push(text.slice(0, 20));
+        if (continued) continuations++;
+        offset += text.length;
+        if (offset === originalParagraphs[sourceIndex]?.length) {
+          sourceIndex++;
+          offset = 0;
+        }
+      }
       const clipped = Array.from(document.querySelectorAll('.flow-inner')).filter((inner) => {
         const last = inner.querySelector('.prose')?.lastElementChild;
         if (!last) return false;
@@ -139,10 +164,14 @@ for (const viewport of [
           normalized([...chapter.diary.paragraphs, chapter.diary.signature].join('')),
         clipped,
         width: document.documentElement.scrollWidth,
+        indentErrors,
+        continuations,
       };
     });
     expect(report.articleMatches).toBe(true);
     expect(report.diaryMatches).toBe(true);
+    expect(report.indentErrors).toEqual([]);
+    expect(report.continuations).toBeGreaterThan(0);
     expect(await page.locator('.book-page[data-page-kind="flow"] .diary-flow').count()).toBe(1);
     expect(report.clipped).toBe(0);
     expect(report.width).toBeLessThanOrEqual(viewport.width);

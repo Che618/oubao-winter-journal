@@ -1,6 +1,6 @@
 /** 内容与页面分离：新章节复用这些类型，不需要复制书本组件。 */
 export type ContentBlock =
-  | { type: 'paragraph'; text: string }
+  | { type: 'paragraph'; text: string; continued?: boolean }
   | { type: 'photo'; src: string; alt: string; caption?: string }
   | { type: 'subheading'; text: string };
 

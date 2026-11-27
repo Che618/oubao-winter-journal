@@ -93,7 +93,7 @@ function Paragraphs({
       {blocks.map((block, i) => {
         if (block.type === 'paragraph')
           return (
-            <p key={i} data-source-paragraph>
+            <p key={i} data-source-paragraph data-continued={block.continued ? 'true' : undefined}>
               {block.text}
             </p>
           );

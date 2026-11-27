@@ -96,6 +96,7 @@ function paginateFlow(
       return figure;
     }
     const el = document.createElement(block.type === 'subheading' ? 'h3' : 'p');
+    if (block.type === 'paragraph' && block.continued) el.dataset.continued = 'true';
     el.textContent = block.text;
     return el;
   }
@@ -132,16 +133,19 @@ function paginateFlow(
         continue;
       }
       let remaining = Array.from(block.text);
+      let continued = block.continued;
       while (remaining.length) {
-        if (fits(nodeFor({ type: 'paragraph', text: remaining.join('') }))) {
-          commit({ type: 'paragraph', text: remaining.join('') });
+        if (fits(nodeFor({ type: 'paragraph', text: remaining.join(''), continued }))) {
+          commit({ type: 'paragraph', text: remaining.join(''), continued });
           break;
         }
         let low = 0,
           high = remaining.length;
         while (low < high) {
           const mid = Math.ceil((low + high) / 2);
-          if (fits(nodeFor({ type: 'paragraph', text: remaining.slice(0, mid).join('') })))
+          if (
+            fits(nodeFor({ type: 'paragraph', text: remaining.slice(0, mid).join(''), continued }))
+          )
             low = mid;
           else high = mid - 1;
         }
@@ -156,8 +160,9 @@ function paginateFlow(
           }
           throw new Error('当前阅读区域过小，请竖屏阅读。');
         }
-        commit({ type: 'paragraph', text: remaining.slice(0, low).join('') });
+        commit({ type: 'paragraph', text: remaining.slice(0, low).join(''), continued });
         remaining = remaining.slice(low);
+        continued = true;
         if (remaining.length) newPage();
       }
     }
