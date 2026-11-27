@@ -19,6 +19,7 @@ const bounded = (point: Point): Point => ({
 
 export function MigrationMap({ config }: { config: MigrationMapConfig }) {
   const board = useRef<HTMLDivElement>(null);
+  const fit = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const drag = useRef<{ id: string; pointer: number; start: Point; origin: Point } | null>(null);
   const [points, setPoints] = useState<Record<string, Point>>({});
@@ -26,14 +27,36 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
   const [active, setActive] = useState(config.stops[0].id);
   const [expanded, setExpanded] = useState(false);
   const [moved, setMoved] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [revision, setRevision] = useState(0);
+  const [boardWidth, setBoardWidth] = useState(0);
   useEffect(() => {
-    // 从放大视图返回时，重新挂载的纸页图层也要立即显示。
-    if (expanded || board.current?.closest('.book-page')?.getAttribute('aria-hidden') === 'false') {
-      board.current?.querySelectorAll<HTMLImageElement>('img[data-src]').forEach((image) => {
-        image.src = image.dataset.src!;
-      });
-    }
-  }, [expanded]);
+    const area = fit.current;
+    const page = area?.closest('.book-page');
+    if (!area || !page) return;
+    const update = () => {
+      // 地图自己持有图片加载状态，避免React重绘/放大返回后外部赋值的src丢失。
+      if (page.classList.contains('is-preloaded') || page.getAttribute('aria-hidden') === 'false')
+        setLoaded(true);
+      if (area.clientWidth && area.clientHeight)
+        setBoardWidth(Math.floor(Math.min(area.clientWidth, (area.clientHeight * width) / height)));
+    };
+    const visibility = new MutationObserver(update);
+    visibility.observe(page, {
+      attributes: true,
+      attributeFilter: ['class', 'aria-hidden'],
+    });
+    const resize = new ResizeObserver(update);
+    resize.observe(area);
+    update();
+    return () => {
+      visibility.disconnect();
+      resize.disconnect();
+    };
+  }, []);
+  const source = (url: string) =>
+    loaded || expanded ? (revision ? `${url}?retry=${revision}` : url) : undefined;
   const stop = config.stops.find((item) => item.id === active)!;
   const coordinates = (event: PointerEvent): Point => {
     const rect = board.current!.getBoundingClientRect();
@@ -97,25 +120,34 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
     top: `${(point.y / height) * 100}%`,
   });
   const map = (
-    <div className="migration-board" ref={board} data-no-flip aria-label="可拖动的红嘴鸥迁徙地图">
+    <div
+      className="migration-board"
+      ref={board}
+      data-no-flip
+      aria-label="可拖动的红嘴鸥迁徙地图"
+      style={
+        expanded
+          ? undefined
+          : {
+              width: boardWidth || '100%',
+              height: boardWidth ? (boardWidth * height) / width : undefined,
+            }
+      }
+    >
       <img
         className="migration-base"
-        data-src={config.base}
-        src={expanded ? config.base : undefined}
+        src={source(config.base)}
+        width={2480}
+        height={3508}
+        onError={() => setFailed(true)}
+        onLoad={() => setFailed(false)}
         alt="红嘴鸥越冬迁徙路线手绘地图：西伯利亚至汉中汉江，路线与日期按提供素材展示，非精确地理地图"
         draggable={false}
       />
-      <img
-        className="migration-route"
-        data-src={config.route}
-        src={expanded ? config.route : undefined}
-        alt=""
-        draggable={false}
-      />
+      <img className="migration-route" src={source(config.route)} alt="" draggable={false} />
       <img
         className="migration-mascot"
-        data-src={config.mascot}
-        src={expanded ? config.mascot : undefined}
+        src={source(config.mascot)}
         alt="飞翔的鸥宝"
         draggable={false}
       />
@@ -128,7 +160,7 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
             style={
               {
                 ...position(point),
-                '--marker-size': `${(item.markerWidth / width) * 100}cqw`,
+                '--marker-size': `${Math.max(7, (item.markerWidth / width) * (expanded ? 540 : boardWidth || 250))}px`,
               } as CSSProperties
             }
             aria-label={`拖动地点：${item.label}`}
@@ -140,18 +172,16 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
             onKeyDown={(e) => key(e, item.id, point)}
             onClick={() => setActive(item.id)}
           >
-            <img
-              data-src={item.marker}
-              src={expanded ? item.marker : undefined}
-              alt=""
-              draggable={false}
-            />
+            <img src={source(item.marker)} alt="" draggable={false} />
           </button>
         );
       })}
       <button
         className="migration-gull"
-        style={position(gull)}
+        style={{
+          ...position(gull),
+          width: Math.max(32, Math.min(80, (expanded ? 540 : boardWidth || 250) * 0.12)),
+        }}
         aria-label="拖动海鸥探索迁徙路线"
         onPointerDown={(e) => begin(e, 'gull', gull)}
         onPointerMove={move}
@@ -159,12 +189,7 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
         onPointerCancel={end}
         onKeyDown={(e) => key(e, 'gull', gull)}
       >
-        <img
-          data-src={config.cursor}
-          src={expanded ? config.cursor : undefined}
-          alt=""
-          draggable={false}
-        />
+        <img src={source(config.cursor)} alt="" draggable={false} />
       </button>
     </div>
   );
@@ -179,7 +204,20 @@ export function MigrationMap({ config }: { config: MigrationMapConfig }) {
       <div className="page-inner migration-inner">
         <h2 className="sr-only">红嘴鸥越冬迁徙路线</h2>
         <p className="migration-guide">拖动海鸥或地点，看看来时的路</p>
-        <div className="migration-fit">{!expanded && map}</div>
+        <div className="migration-fit" ref={fit}>
+          {!expanded && map}
+        </div>
+        {failed && (
+          <button
+            className="migration-retry"
+            onClick={() => {
+              setFailed(false);
+              setRevision((previous) => previous + 1);
+            }}
+          >
+            地图加载未完成，点击重试
+          </button>
+        )}
         {details}
         <div className="migration-tools">
           <button
