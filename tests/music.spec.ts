@@ -12,6 +12,24 @@ const paused = (page: Page) =>
 test('进入即加载，自动播放被拦截后轻触封面播放；关闭后不误恢复，重新进入默认开启', async ({
   page,
 }) => {
+  // 固定模拟手势策略；手势后仍调用原生play验证真实音频，避免依赖Chrome版本和加载时机。
+  await page.addInitScript(() => {
+    const play = HTMLMediaElement.prototype.play;
+    let activated = false;
+    for (const type of ['pointerdown', 'touchend', 'keydown'])
+      document.addEventListener(
+        type,
+        (event) => {
+          if (event.isTrusted) activated = true;
+        },
+        true,
+      );
+    HTMLMediaElement.prototype.play = function () {
+      if (this instanceof HTMLAudioElement && !activated)
+        return Promise.reject(new DOMException('Requires user activation', 'NotAllowedError'));
+      return play.call(this);
+    };
+  });
   const requests: string[] = [];
   page.on('request', (request) => {
     if (request.url().endsWith('.mp3')) requests.push(request.url());

@@ -4,6 +4,8 @@
 
 ## 本地运行
 
+首页直接在HTML中显示约276 KB的原设计封面场景，不等待JavaScript、字体和整章排版。交互版本准备好后一次替换，避免背景、封面逐层出现。手机显示图片在 `public/assets/screen`，原尺寸无损图保留作校对；更新设计后执行 `npm run assets:screen`。书页背景、视频封面和正文照片只在读到当前页或相邻页时加载。
+
 需要 Node.js 22.12 或更新版本。项目使用 React、TypeScript、Vite，以及提供纸张卷曲效果的 StPageFlip。
 
 ```powershell

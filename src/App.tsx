@@ -243,11 +243,11 @@ export default function App() {
       style={
         {
           '--paper-image': `url("${asset('paper.webp')}")`,
-          '--blank-image': `url("${asset('notebook-blank.webp')}")`,
-          '--cover-image': `url("${asset('notebook-title.webp')}")`,
-          '--logo-image': `url("${asset('notebook-logo.webp')}")`,
-          '--scene-image': `url("${asset('notebook-scene.webp')}")`,
-          '--scene-edge': `url("${asset('scene-edge.webp')}")`,
+          '--blank-image': `url("${asset('screen/notebook-blank.webp')}")`,
+          '--cover-image': `url("${asset('screen/notebook-title.webp')}")`,
+          '--logo-image': `url("${asset('screen/notebook-logo.webp')}")`,
+          '--scene-image': `url("${asset('screen/notebook-scene.webp')}")`,
+          '--scene-edge': `url("${asset('screen/scene-edge.webp')}")`,
           '--contents-image': `url("${content?.contentsDesign ?? asset('notebook-blank.webp')}")`,
           '--migration-paper': `url("${content?.journey?.map?.paper ?? asset('notebook-blank.webp')}")`,
         } as React.CSSProperties

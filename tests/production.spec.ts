@@ -1,5 +1,23 @@
 import { test, expect } from '@playwright/test';
 
+test('原设计首页无需执行JavaScript就能直接显示', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: { width: 390, height: 844 },
+  });
+  const page = await context.newPage();
+  const response = await page.goto(baseURL!);
+  expect(response?.ok()).toBe(true);
+  await expect(page.locator('#startup-cover img')).toBeVisible();
+  const coverResponse = await context.request.get(
+    new URL('assets/screen/homepage.webp', baseURL!).href,
+  );
+  expect(coverResponse.ok()).toBe(true);
+  expect((await coverResponse.body()).byteLength).toBeLessThan(300000);
+  await page.screenshot({ path: 'test-results/static-homepage.png' });
+  await context.close();
+});
+
 for (const viewport of [
   { width: 390, height: 844 },
   { width: 1440, height: 1000 },
@@ -19,6 +37,16 @@ for (const viewport of [
     });
     await page.goto('./');
     await page.locator('.flip-engine[data-ready="true"]').waitFor();
+    await expect(page.locator('#startup-cover')).toHaveCount(0);
+    const firstImages = await page.evaluate(() =>
+      performance
+        .getEntriesByType('resource')
+        .filter((resource) => /\.(webp|mp4)(?:\?|$)/.test(resource.name))
+        .map((resource) => resource.name),
+    );
+    expect(
+      firstImages.some((url) => /\/migration\/|\/vlog[.-]|\/assets\/notebook-/.test(url)),
+    ).toBe(false);
     // 验证浏览器实际解析出的CSS背景地址，不能只检查HTML或文件是否存在。
     const backgrounds = await page
       .locator('.book-stage, .page-cover, .page-contents, .landscape-background')

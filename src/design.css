@@ -54,6 +54,9 @@
   border: 0;
   border-radius: 0;
 }
+.book-page:not(.is-preloaded) {
+  background-image: none;
+}
 .book-page:after {
   display: none;
 }
@@ -63,9 +66,12 @@
 .page-cover {
   background-image: var(--cover-image);
 }
-.page-backCover,
-.loading-page {
+.page-backCover {
   background-image: var(--logo-image);
+  background-size: 100% 100%;
+}
+.loading-page {
+  background-image: var(--cover-image);
   background-size: 100% 100%;
 }
 .page-contents.has-contents-design {

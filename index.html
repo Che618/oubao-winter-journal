@@ -7,9 +7,17 @@
     <meta name="description" content="跟着鸥宝翻开越冬日记，在汉江边，赴一场冬天的约定。" />
     <title>鸥宝越冬志 · 一江温暖，一冬相伴</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preload" as="image" href="./assets/screen/homepage.webp" fetchpriority="high" />
+    <style>
+      html,body{margin:0;background:#d4e9df}
+      #startup-cover{position:fixed;inset:0;overflow:hidden;z-index:1000;pointer-events:none;background:#d4e9df}
+      #startup-cover img{position:absolute;left:50%;top:50%;height:100svh;width:auto;max-width:none;transform:translate(-50%,-50%);aspect-ratio:1511/2845}
+      @media(max-width:600px){#startup-cover img{height:max(100svh,calc(100vw * 2845 / 1511))}}
+    </style>
   </head>
   <body>
+    <div id="startup-cover" aria-hidden="true"><img src="./assets/screen/homepage.webp" alt="" fetchpriority="high" decoding="async" width="1511" height="2845" /></div>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/bootstrap.ts"></script>
   </body>
 </html>

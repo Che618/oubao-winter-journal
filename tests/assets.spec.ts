@@ -36,7 +36,9 @@ test('第一章28张素材全部有网页用途，18张照片完整编入相簿'
     ].join('\n'),
   );
   for (const entry of manifest)
-    expect(rendered, `未展示：${entry.source}`).toContain(`assets/${entry.asset}`);
+    expect(rendered, `未展示：${entry.source}`).toContain(
+      `assets/${entry.asset.startsWith('notebook-') ? 'screen/' : ''}${entry.asset}`,
+    );
   const photos = await page
     .locator('.album-photos img')
     .evaluateAll((images) => images.map((image) => image.getAttribute('data-src')));

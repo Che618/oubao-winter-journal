@@ -15,7 +15,7 @@ const albumPhoto = (number: number, alt: string, caption: string) => ({
 
 const chapter: ChapterContent = {
   id: 'chapter-01',
-  contentsDesign: asset('notebook-chapter.webp'),
+  contentsDesign: asset('screen/notebook-chapter.webp'),
   opening: {
     greeting: '你好呀，我是',
     title: '鸥宝！',
@@ -105,7 +105,7 @@ const chapter: ChapterContent = {
     aerial: { src: asset('chapter-01/photo-06.webp'), alt: '从空中俯瞰汉江与沿岸观鸥的人群' },
     map: {
       base: asset('chapter-01/migration/map.webp'),
-      paper: asset('chapter-01/migration/paper.webp'),
+      paper: asset('screen/migration-paper.webp'),
       route: asset('chapter-01/migration/route.webp'),
       cursor: asset('chapter-01/migration/gull.webp'),
       mascot: asset('chapter-01/migration/oubao-flying.webp'),

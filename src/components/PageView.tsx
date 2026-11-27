@@ -413,7 +413,7 @@ export function PageView(props: PageViewProps) {
                 controls
                 playsInline
                 preload="none"
-                poster={chapter.video.poster}
+                data-poster={chapter.video.poster}
                 src={chapter.video.src}
                 aria-label={chapter.video.title}
               />

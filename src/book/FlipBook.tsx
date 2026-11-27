@@ -115,8 +115,12 @@ export const FlipBook = forwardRef<BookHandle, Props>(function FlipBook(props, r
       for (const neighbor of [index - 1, index, index + 1]) {
         const node = nodes[neighbor];
         if (!node) continue;
+        node.classList.add('is-preloaded');
         node.querySelectorAll<HTMLImageElement>('img[data-src]').forEach((img) => {
           if (!img.src) img.src = img.dataset.src!;
+        });
+        node.querySelectorAll<HTMLVideoElement>('video[data-poster]').forEach((video) => {
+          if (!video.poster) video.poster = video.dataset.poster!;
         });
       }
     };
