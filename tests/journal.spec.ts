@@ -171,7 +171,6 @@ for (const viewport of [
     expect(report.articleMatches).toBe(true);
     expect(report.diaryMatches).toBe(true);
     expect(report.indentErrors).toEqual([]);
-    expect(report.continuations).toBeGreaterThan(0);
     expect(await page.locator('.book-page[data-page-kind="flow"] .diary-flow').count()).toBe(1);
     expect(report.clipped).toBe(0);
     expect(report.width).toBeLessThanOrEqual(viewport.width);
@@ -204,6 +203,9 @@ for (const viewport of [
     await diaryPage.evaluate((element) => element.scrollTo({ top: 0 }));
     await goTo(page, '江边剪报');
     const articlePages = await page.locator('.book-page').count();
+    await expect(
+      page.locator('.book-page[data-page-kind="flow"][data-page-id*="-article-"]'),
+    ).toHaveCount(1);
     for (let i = 0; i < articlePages; i++) {
       const currentPage = page.locator('.book-page[aria-hidden="false"]');
       if (
@@ -211,17 +213,26 @@ for (const viewport of [
         !(await currentPage.getAttribute('data-page-id'))?.includes('-article-')
       )
         break;
-      const overflow = await currentPage.locator('.article-flow').evaluate((inner) => {
-        const last = inner.querySelector('.prose')?.lastElementChild;
-        return last
-          ? last.getBoundingClientRect().bottom -
-              (inner.getBoundingClientRect().bottom -
-                parseFloat(getComputedStyle(inner).paddingBottom))
-          : 0;
-      });
-      expect(overflow, `图文稿件正文超页 ${overflow}`).toBeLessThanOrEqual(1);
-      if (await page.getByRole('button', { name: '下一页', exact: true }).isDisabled()) break;
-      await page.getByRole('button', { name: '下一页', exact: true }).click();
+      const article = currentPage.locator('.article-flow');
+      await expect(article).toHaveCSS('overflow-y', 'auto');
+      const beginning = await article.evaluate((element) => element.scrollTop);
+      await expect(article.locator('.prose .reader-figure')).toHaveCount(4);
+      await expect
+        .poll(() =>
+          article
+            .locator('.prose .reader-figure img')
+            .evaluateAll((images) =>
+              images.every((image) => (image as HTMLImageElement).naturalWidth > 0),
+            ),
+        )
+        .toBe(true);
+      await article.evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
+      expect(await article.evaluate((element) => element.scrollTop)).toBeGreaterThan(beginning);
+      await expect(article.locator('.prose > p').last()).toBeVisible();
+      await expect(currentPage.getByRole('button', { name: '上滑，继续读' })).toBeHidden();
+      await article.evaluate((element) => element.scrollTo({ top: 0 }));
+      await expect(currentPage.getByRole('button', { name: '上滑，继续读' })).toBeVisible();
+      break;
     }
     await goTo(page, '鸟瞰汉江');
     const img = page.locator('.book-page[aria-hidden="false"] .aerial-photo img');
@@ -232,6 +243,8 @@ for (const viewport of [
     await expect(page.getByRole('dialog', { name: '照片查看器' })).toBeVisible();
     await page.getByRole('button', { name: '关闭照片' }).click();
     await page.screenshot({ path: `test-results/aerial-${viewport.width}.png` });
+    await goTo(page, '鸟瞰汉江');
+    await expect(page.locator('.panorama-note')).not.toContainText('360°鸟瞰体验，待更新');
   });
 }
 
@@ -270,8 +283,8 @@ test('改变屏幕尺寸保持阅读区域，重建翻书实例不报错', async
       '西伯利亚的朋友，又来啦！',
     );
   }
-  await page.getByRole('button', { name: '下一页', exact: true }).click();
-  await expect(page.locator('.reading-position')).toContainText('江边剪报');
+  await goTo(page, '鸟瞰汉江');
+  await expect(page.locator('.reading-position')).toContainText('鸟瞰汉江');
   expect(errors).toEqual([]);
 });
 

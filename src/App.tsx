@@ -105,9 +105,9 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!content || size.width < 180 || size.height < 180) return;
+    if (!content) return;
     let cancelled = false;
-    // 字体按文字分片加载；先加载本章用到的字形，再测量，避免字体替换后正文超页。
+    // 先加载本章用到的字形，避免正文首屏出现字体替换。
     Promise.all([
       document.fonts.load(
         '17px "Journal Kai"',
@@ -125,7 +125,7 @@ export default function App() {
       .then(() => {
         if (cancelled) return;
         try {
-          const nextPages = buildPages(content, size.width, size.height);
+          const nextPages = buildPages(content);
           const previous = savedPosition.current;
           const nextIndex =
             previous?.chapterId === content.id
@@ -143,7 +143,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [content, size]);
+  }, [content]);
 
   const onFlip = useCallback(
     (value: number) => {

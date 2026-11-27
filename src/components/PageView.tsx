@@ -499,11 +499,7 @@ export function PageView(props: PageViewProps) {
               <ArrowUpRight size={15} />
             </a>
           ) : (
-            <p className="panorama-note">
-              先收下一张空中的风景。
-              <br />
-              <span>360°鸟瞰体验，待更新。</span>
-            </p>
+            <p className="panorama-note">先收下一张空中的风景。</p>
           )}
         </div>
       );
@@ -558,7 +554,9 @@ export function PageView(props: PageViewProps) {
       {content}
       {page.kind !== 'cover' &&
         page.kind !== 'backCover' &&
-        (page.kind !== 'flow' || page.section === 'diary') && <ScrollHint />}
+        (page.kind !== 'flow' || page.section === 'diary' || page.section === 'article') && (
+          <ScrollHint />
+        )}
       {page.kind !== 'cover' && page.kind !== 'backCover' && (
         <div className="page-footer">
           <span>鸥宝越冬志 · {summary.title}</span>

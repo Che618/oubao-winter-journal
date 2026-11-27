@@ -32,6 +32,21 @@
   scrollbar-color: #b69a7655 transparent;
   -webkit-overflow-scrolling: touch;
 }
+.article-flow {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b69a7655 transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.article-flow::-webkit-scrollbar {
+  width: 3px;
+}
+.article-flow::-webkit-scrollbar-thumb {
+  background: #b69a7655;
+  border-radius: 3px;
+}
 .diary-flow::-webkit-scrollbar {
   width: 3px;
 }
